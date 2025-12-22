@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        }
+    ],
+    "settings": {
+        "cmake.sourceDirectory": "/home/lukasdiegelmann/repositories/ros2_6dof_arm_control/src/arm_description",
+        "cmake.environment": {
+            "CMAKE_PREFIX_PATH": "/opt/ros/jazzy:$CMAKE_PREFIX_PATH"
+        }
+    }
+}
