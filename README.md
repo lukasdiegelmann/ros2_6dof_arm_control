@@ -5,8 +5,7 @@ This repository implements a ROS2-based control pipeline for a simulated 6-degre
 ---
 
 ## Demo
-🚧 *Demo video coming soon*  
-(A short video/GIF demonstrating end-effector pose control and trajectory execution in simulation.)
+![Demo: End-effector pose control in simulation](media/arm_movement.gif)
 
 ---
 
