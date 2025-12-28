@@ -13,6 +13,21 @@ find_package(std_msgs REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+# install URDF files
+install(DIRECTORY urdf
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# install XARCO files
+install(DIRECTORY xacro
+  DESTINATION share/${PROJECT_NAME}
+)
+
+# install mesh files
+install(DIRECTORY meshes
+  DESTINATION share/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

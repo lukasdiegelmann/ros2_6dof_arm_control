@@ -9,6 +9,33 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(kdl_parser REQUIRED)
+find_package(orocos_kdl REQUIRED)
+
+# add executables
+add_executable(go_to_pose_node
+  src/go_to_pose_node.cpp
+  src/urdf_chain_fk.cpp
+  src/joint_mapping.cpp
+)
+target_include_directories(go_to_pose_node PUBLIC include)
+
+ament_target_dependencies(go_to_pose_node
+  rclcpp
+  sensor_msgs
+  geometry_msgs
+  trajectory_msgs
+  kdl_parser
+  orocos_kdl
+)
+
+install(TARGETS
+  go_to_pose_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
