@@ -12,16 +12,22 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(orocos_kdl REQUIRED)
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # add executables
 add_executable(go_to_pose_node
   src/go_to_pose_node.cpp
   src/urdf_chain_fk.cpp
   src/joint_mapping.cpp
+  src/ik_dls.cpp
 )
 target_include_directories(go_to_pose_node PUBLIC include)
+target_link_libraries(go_to_pose_node Eigen3::Eigen)
 
 ament_target_dependencies(go_to_pose_node
   rclcpp
@@ -30,10 +36,23 @@ ament_target_dependencies(go_to_pose_node
   trajectory_msgs
   kdl_parser
   orocos_kdl
+  eigen3_cmake_module
+)
+
+add_executable(go_to_pose
+  src/go_to_pose_cli.cpp
+)
+
+ament_target_dependencies(go_to_pose
+  rclcpp
+  geometry_msgs
+  tf2
+  tf2_geometry_msgs
 )
 
 install(TARGETS
   go_to_pose_node
+  go_to_pose
   DESTINATION lib/${PROJECT_NAME}
 )
 

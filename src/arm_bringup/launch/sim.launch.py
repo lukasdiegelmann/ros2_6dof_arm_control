@@ -62,26 +62,40 @@ def generate_launch_description():
         output="screen",
     )
 
-    # Controller spawners - delayed to wait for gz_ros2_control initialization
+    # Controller spawners - delay to avoid race with gz_ros2_control / entity spawn.
+    # On slower machines the controller_manager services can appear before the hardware
+    # interfaces are fully ready, causing sporadic "Failed to configure controller".
     delayed_jsb_spawner = TimerAction(
-        period=3.0,
+        period=6.0,
         actions=[
             Node(
                 package="controller_manager",
                 executable="spawner",
-                arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+                arguments=[
+                    "joint_state_broadcaster",
+                    "--controller-manager", "/controller_manager",
+                    "--controller-manager-timeout", "60",
+                    "--service-call-timeout", "60",
+                    "--switch-timeout", "60",
+                ],
                 output="screen",
             )
         ]
     )
 
     delayed_traj_spawner = TimerAction(
-        period=4.0,
+        period=8.0,
         actions=[
             Node(
                 package="controller_manager",
                 executable="spawner",
-                arguments=["joint_trajectory_controller", "--controller-manager", "/controller_manager"],
+                arguments=[
+                    "joint_trajectory_controller",
+                    "--controller-manager", "/controller_manager",
+                    "--controller-manager-timeout", "60",
+                    "--service-call-timeout", "60",
+                    "--switch-timeout", "60",
+                ],
                 output="screen",
             )
         ]

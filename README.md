@@ -13,6 +13,16 @@ This repository implements a ROS2-based control pipeline for a simulated 6-degre
 ## How to Run
 🚧 *Instructions will be added once the basic simulation and control pipeline is finalized.*
 
+## Week 3: CLI Pose Command
+
+When `go_to_pose_node` is running, you can publish a one-shot target pose via:
+
+```bash
+ros2 run arm_apps go_to_pose --x 0.45 --y 0.15 --z 0.25 --roll 0 --pitch 0 --yaw 0
+```
+
+Use reachable poses (otherwise IK may fail).
+
 ---
 
 ## Roadmap
