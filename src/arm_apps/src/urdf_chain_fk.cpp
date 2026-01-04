@@ -10,6 +10,11 @@ namespace arm_apps
                                    const std::string &base_link,
                                    const std::string &tip_link)
     {
+        if (!urdf_model_.initString(urdf_xml))
+        {
+            throw std::runtime_error("Failed to parse URDF XML into urdf::Model");
+        }
+
         if (!kdl_parser::treeFromString(urdf_xml, tree_))
         {
             throw std::runtime_error("Failed to parse URDF XML into KDL Tree");
