@@ -1,190 +1,242 @@
 # ros2_6dof_arm_control
 
-ROS2-based 6-DOF robotic arm control stack with inverse kinematics, trajectory planning,
-joint limits, and RViz/Gazebo visualization.
+<p align="center">
+  <img src="media/pick_and_place.gif" width="420">
+</p>
 
-> Planned first release tag: **v0.1-mvp** (repo is prepared for release; no git tag created here).
+<p align="center">
+  <b>ROS2-based 6-DOF robotic arm control stack</b><br>
+  Inverse Kinematics • Trajectory Planning • ros2_control • Gazebo • RViz
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/ROS2-Jazzy%20%7C%20Humble-blue">
+  <img src="https://img.shields.io/badge/Language-C%2B%2B%20%7C%20Python-informational">
+  <img src="https://img.shields.io/github/license/USER/ros2_6dof_arm_control">
+</p>
+
+---
+
+## Overview
+
+**ros2_6dof_arm_control** is a ROS2-based control stack for a 6-DOF robotic arm, focusing on
+**Cartesian control, inverse kinematics, and trajectory execution** using `ros2_control`.
+
+The project deliberately avoids high-level planners (e.g. MoveIt2) in favor of a
+**transparent, end-to-end control pipeline**:
+from Cartesian targets → IK → joint trajectories → controller execution.
+
+> Planned first release tag: **v0.1-mvp**
+
+---
+
+## Why this project matters
+
+This repository demonstrates a **full manipulation control pipeline implemented from scratch**:
+
+- Cartesian motion generation
+- Damped Least Squares inverse kinematics
+- Joint limit & velocity enforcement
+- Time-parameterized trajectories
+- Deterministic execution via `ros2_control`
+
+It is intended as a **learning-focused yet production-quality** foundation for
+advanced manipulation topics such as MoveIt2, impedance control, and real hardware bringup.
+
+---
 
 ## Key Features
 
 - Inverse Kinematics (Damped Least Squares)
 - Joint limits & velocity constraints
-- Time-parameterized trajectories
-- Pick & Place demo + Cartesian circle demo
-- RViz visualization (TCP trail, joint trajectories)
-- Gazebo simulation via ros2_control
+- Time-parameterized joint trajectories
+- Pick & Place demo
+- Cartesian circle (TCP waypoint) demo
+- RViz visualization (TCP trails, joint trajectories)
+- Gazebo simulation via `ros2_control`
+
+---
 
 ## Tech Stack
 
-- ROS2 (Jazzy)
-- C++ (rclcpp) + Python (rclpy)
-- Gazebo (gz sim)
-- ros2_control + ros2_controllers
+- ROS2 (Jazzy / Humble)
+- C++ (`rclcpp`) + Python (`rclpy`)
+- Gazebo (`gz sim`)
+- `ros2_control` + `ros2_controllers`
 - RViz2
 
-## Installation (copy-paste ready)
+---
+
+## Installation
 
 ### System requirements
 
-- Linux (tested on Ubuntu 22.04/24.04)
+- Linux (tested on Ubuntu 22.04 / 24.04)
 - ROS2 **Humble** (Ubuntu 22.04) or **Jazzy** (Ubuntu 24.04)
 
-### Build & setup
+### Build & setup (copy-paste ready)
 
-```bash
-# 1) Source your ROS distro
-source /opt/ros/$ROS_DISTRO/setup.bash
+    # 1) Source your ROS distro
+    source /opt/ros/$ROS_DISTRO/setup.bash
 
-# 2) System tools
-sudo apt update
-sudo apt install -y \
-	python3-rosdep \
-	python3-colcon-common-extensions \
-	python3-vcstool
+    # 2) System tools
+    sudo apt update
+    sudo apt install -y \
+      python3-rosdep \
+      python3-colcon-common-extensions \
+      python3-vcstool
 
-# 3) rosdep (first time on your machine)
-sudo rosdep init || true
-rosdep update
+    # 3) rosdep (first time only)
+    sudo rosdep init || true
+    rosdep update
 
-# 4) Install package dependencies (from package.xml)
-cd /path/to/ros2_6dof_arm_control
-rosdep install --from-paths src --ignore-src -r -y
+    # 4) Install package dependencies
+    cd /path/to/ros2_6dof_arm_control
+    rosdep install --from-paths src --ignore-src -r -y
 
-# 5) Build
-colcon build --symlink-install
+    # 5) Build
+    colcon build --symlink-install
 
-# 6) Source overlay
-source install/setup.bash
-```
+    # 6) Source overlay
+    source install/setup.bash
 
-## Running the Demos
+---
+
+## Demos
 
 All demo launch files live in `arm_bringup`.
 
+---
+
 ### Pick & Place
 
-Starts Gazebo sim, spawns the UR5, ensures controllers are active, runs `go_to_pose_node`,
-and executes a demo target sequence.
+Starts Gazebo simulation, spawns the UR5, ensures controllers are active,
+runs `go_to_pose_node`, and executes a predefined target sequence.
 
-<img src="media/pick_and_place.gif" width="250">
-
-```bash
-source /opt/ros/$ROS_DISTRO/setup.bash
+<table>
+  <tr>
+    <td valign="top">
+      <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
-ros2 launch arm_bringup pick_and_place.demo.launch.py
-```
+ros2 launch arm_bringup pick_and_place.demo.launch.py</code></pre>
+    </td>
+    <td valign="top" width="45%">
+      <img src="media/pick_and_place.gif" width="420">
+    </td>
+  </tr>
+</table>
+
+---
 
 ### Cartesian circle (draw_circle_cartesian)
 
-Runs a cartesian circle by generating TCP waypoints and solving IK for each point.
+Runs a Cartesian circle by generating TCP waypoints and solving IK for each point.
 
-<img src="media/circle_cartesian.gif" width="250">
-
-```bash
-source /opt/ros/$ROS_DISTRO/setup.bash
+<table>
+  <tr>
+    <td valign="top">
+      <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
-ros2 launch arm_bringup circle_cartesian.demo.launch.py
-```
+ros2 launch arm_bringup circle_cartesian.demo.launch.py</code></pre>
 
-Useful args (optional):
+      <p><b>Optional arguments:</b></p>
 
-```bash
-ros2 launch arm_bringup circle_cartesian.demo.launch.py \
-	radius:=0.18 plane:=xy loops:=2 num_points:=80 point_duration:=0.30
-```
+      <pre><code>ros2 launch arm_bringup circle_cartesian.demo.launch.py \
+  radius:=0.18 plane:=xy loops:=2 num_points:=80 point_duration:=0.30</code></pre>
+    </td>
+    <td valign="top" width="45%">
+      <img src="media/circle_cartesian.gif" width="420">
+    </td>
+  </tr>
+</table>
+
+---
 
 ### Joint trajectory visualization
 
 Publishes RViz `visualization_msgs/Marker` traces for joint trajectories.
 
-```bash
-source /opt/ros/$ROS_DISTRO/setup.bash
-source install/setup.bash
+    source /opt/ros/$ROS_DISTRO/setup.bash
+    source install/setup.bash
 
-ros2 launch arm_bringup joint_traj_viz.launch.py
-```
+    ros2 launch arm_bringup joint_traj_viz.launch.py
+
+---
 
 ### RViz (optional)
 
-```bash
-source /opt/ros/$ROS_DISTRO/setup.bash
-source install/setup.bash
+Starts RViz2 with a preconfigured visualization.
 
-ros2 launch arm_bringup rviz.launch.py
-```
+    source /opt/ros/$ROS_DISTRO/setup.bash
+    source install/setup.bash
 
-This launch starts RViz2 with a preconfigured file:
-
-- Config: `arm_bringup/config/rviz/default.rviz`
-- Fixed Frame: `world` (URDF contains a `world` link with a fixed joint to `base_link`)
-- Robot visualization: `RobotModel` + `TF` (RobotModel is driven by TF, typically from `robot_state_publisher` fed by `/joint_states`)
-- Trajectory visualization (no MoveIt2 here): MarkerArray on `/joint_traj_viz` (published by `arm_apps/joint_trajectory_viz_node`)
+    ros2 launch arm_bringup rviz.launch.py
 
 Optional plotting:
 
-```bash
-ros2 launch arm_bringup rviz.launch.py use_rqt_plot:=true plot_joint_count:=6
-```
+    ros2 launch arm_bringup rviz.launch.py use_rqt_plot:=true plot_joint_count:=6
+
+---
 
 ### One-shot pose command (CLI)
 
-When `go_to_pose_node` is running (e.g., via Pick&Place or Circle demo), send a target pose:
+When `go_to_pose_node` is running:
 
-```bash
-ros2 run arm_apps go_to_pose --x 0.45 --y 0.15 --z 0.25 --roll 0 --pitch 0 --yaw 0
-```
+    ros2 run arm_apps go_to_pose \
+      --x 0.45 --y 0.15 --z 0.25 \
+      --roll 0 --pitch 0 --yaw 0
+
+---
 
 ## Architecture Overview
 
 ### Node graph (high level)
 
-```text
- Gazebo (gz sim)
-	 │
-	 ├── ros_gz_bridge  ───────────────►  /clock
-	 │
-	 └── gz_ros2_control
-					│
-					├── controller_manager
-					│     ├── joint_state_broadcaster      ─► /joint_states
-					│     └── joint_trajectory_controller  ◄─ /joint_trajectory_controller/joint_trajectory
-					│
-					└── arm_bringup/ensure_controllers_active (idempotent activation)
+    Gazebo (gz sim)
+      │
+      ├── ros_gz_bridge  ───────────────►  /clock
+      │
+      └── gz_ros2_control
+             │
+             ├── controller_manager
+             │     ├── joint_state_broadcaster
+             │     └── joint_trajectory_controller
+             │
+             └── ensure_controllers_active
 
- arm_apps/go_to_pose_node
-	 ├── IK solver (Damped Least Squares)
-	 ├── joint limits + velocity constraints
-	 └── time-parameterized JointTrajectory  ───────► /joint_trajectory_controller/joint_trajectory
+    go_to_pose_node
+      ├── IK (Damped Least Squares)
+      ├── Joint limits & velocity constraints
+      └── JointTrajectory → controller
 
- arm_apps/joint_trajectory_viz_node  ─────────────► RViz markers (trails/plots)
- robot_state_publisher               ─────────────► /tf, /tf_static
-```
+    joint_trajectory_viz_node → RViz markers
+    robot_state_publisher → /tf
 
-### Data flow (what happens when you command a pose)
-
-- `go_to_pose_node` receives a target end-effector pose (CLI or demo sequence).
-- The DLS IK computes a joint configuration that matches the pose (within limits).
-- The planner time-parameterizes a smooth joint trajectory subject to constraints.
-- The trajectory is published to `joint_trajectory_controller`.
-- ros2_control executes the trajectory in Gazebo; `joint_state_broadcaster` publishes feedback.
-- `joint_trajectory_viz_node` (optional) turns joint data into RViz markers for inspection.
+---
 
 ## Results
 
-- Typical IK behavior: converges quickly for reachable targets; fails gracefully for unreachable poses.
-- Trajectory quality: time-parameterized joint motion with smooth transitions and bounded velocities.
-- Execution: deterministic controller-driven motion in simulation (plus built-in stall/lag diagnosis scripts).
+- Fast IK convergence for reachable targets
+- Smooth, time-parameterized joint motion
+- Deterministic execution via ros2_control
+- Clear visualization and debugging in RViz
+
+---
 
 ## Roadmap
 
-- MoveIt2 integration (planning + scene management)
+- MoveIt2 integration
 - Impedance / admittance control
 - Collision-aware planning
-- Real hardware support (bringup + calibration)
+- Real hardware support
+
+---
 
 ## CV / Portfolio bullets
 
-- Developed a ROS2-based 6-DOF robotic arm control stack with IK, joint-limit enforcement, and trajectory planning, demonstrated via Pick & Place and Cartesian motion demos.
-- Built a modular ROS2 architecture with RViz and Gazebo integration, enabling reproducible simulation, visualization, and evaluation of motion quality.
+- Developed a ROS2-based 6-DOF robotic arm control stack with inverse kinematics,
+  joint-limit enforcement, and trajectory planning.
+- Designed a modular ROS2 architecture with Gazebo and RViz integration,
+  enabling reproducible simulation and motion-quality evaluation.
