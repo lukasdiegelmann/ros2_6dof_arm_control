@@ -10,5 +10,7 @@
     "ROS2.distro": "jazzy",
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "cSpell.words": ["rclcpp", "unitquaternion", "xacro"],
-    "cSpell.enabled": false
+    "cSpell.enabled": false,
+    "C_Cpp.clang_format_style": "file",
+    "editor.formatOnSave": true
 }

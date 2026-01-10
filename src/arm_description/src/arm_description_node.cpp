@@ -1,11 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-class ArmDescriptionNode : public rclcpp::Node
-{
+class ArmDescriptionNode : public rclcpp::Node {
 public:
-  ArmDescriptionNode() : Node("arm_description_node")
-  {
-    
-  }
+  ArmDescriptionNode() : Node("arm_description_node") {}
 };
