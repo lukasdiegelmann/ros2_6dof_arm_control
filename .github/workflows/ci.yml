@@ -62,7 +62,7 @@ jobs:
           source /opt/ros/$ROS_DISTRO/setup.bash
           ament_clang_format --config .clang-format src include
 
-            - name: Generate clang-format patch (if needed)
+      - name: Generate clang-format patch (if needed)
         shell: bash
         run: |
           set -e
