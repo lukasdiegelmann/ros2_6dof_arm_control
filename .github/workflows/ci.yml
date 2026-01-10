@@ -73,36 +73,28 @@ jobs:
             exit 0
           fi
 
-          # Ensure clang-format is available
-          clang-format --version
+          # FIX: allow git operations inside container
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-          # Apply clang-format in-place to all C/C++ files under src/ and include/ (if they exist)
-          # This is deterministic and will actually modify files when needed.
+          # Apply clang-format deterministically
           if [ -d src ]; then
-            find src -type f \( -name "*.cpp" -o -name "*.cc" -o -name "*.cxx" -o -name "*.h" -o -name "*.hpp" -o -name "*.hh" \) \
-              -print -exec clang-format -i {} +
+            find src -type f \( -name "*.cpp" -o -name "*.cc" -o -name "*.cxx" -o -name "*.h" -o -name "*.hpp" \) \
+              -exec clang-format -i {} +
           fi
 
           if [ -d include ]; then
-            find include -type f \( -name "*.h" -o -name "*.hpp" -o -name "*.hh" \) \
-              -print -exec clang-format -i {} +
+            find include -type f \( -name "*.h" -o -name "*.hpp" \) \
+              -exec clang-format -i {} +
           fi
 
           echo "Git status after reformat:"
-          git status --porcelain || true
+          git status --porcelain
 
-          # Create patch
-          git diff > clang_format_fixes.patch || true
+          git diff > clang_format_fixes.patch
 
           echo "Patch file info:"
-          ls -lah clang_format_fixes.patch || true
-          wc -l clang_format_fixes.patch || true
-
-          # If patch is empty, remove it so upload-artifact can be configured to ignore or error as you prefer
-          if [ ! -s clang_format_fixes.patch ]; then
-            echo "Patch is empty; removing."
-            rm -f clang_format_fixes.patch
-          fi
+          ls -lah clang_format_fixes.patch
+          wc -l clang_format_fixes.patch
 
       - name: Upload clang-format patch artifact
         if: steps.clang_check.outcome == 'failure'
