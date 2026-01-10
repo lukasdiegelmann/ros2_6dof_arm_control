@@ -44,39 +44,51 @@ jobs:
             clang-format \
             ros-${ROS_DISTRO}-ament-clang-format
 
-      - name: C++ format (clang-format) - check
+            - name: C++ format (clang-format) - check
         id: clang_check
         shell: bash
         run: |
           set -e
           source /opt/ros/$ROS_DISTRO/setup.bash
-
-          # Uses .clang-format from repo root
-          # Limit paths here to whatever you actually have:
           ament_clang_format --config .clang-format src include
 
-      - name: If clang-format fails, generate patch artifact
-        if: failure() && steps.clang_check.outcome == 'failure'
+      - name: Generate clang-format patch (on failure)
+        if: always()
         shell: bash
         run: |
           set -e
+          if [ "${{ steps.clang_check.outcome }}" != "failure" ]; then
+            echo "clang-format check passed; no patch needed."
+            exit 0
+          fi
+
           source /opt/ros/$ROS_DISTRO/setup.bash
 
-          # Reformat in-place so we can create a patch
+          # Apply formatting in-place
           ament_clang_format --config .clang-format --reformat src include
 
-          # Create a patch with the formatting fixes
+          # Create patch (even if empty, we handle that)
           git diff > clang_format_fixes.patch || true
 
-          echo "clang-format produced changes. A patch will be uploaded as an artifact."
-          git --no-pager diff --stat || true
+          echo "Changed files:"
+          git --no-pager diff --name-only || true
+
+          echo "Patch size:"
+          ls -lah clang_format_fixes.patch || true
+
+          # If patch is empty, remove it so upload-artifact doesn't warn
+          if [ ! -s clang_format_fixes.patch ]; then
+            echo "Patch is empty; removing."
+            rm -f clang_format_fixes.patch
+          fi
 
       - name: Upload clang-format patch artifact
-        if: failure() && steps.clang_check.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: clang-format-fixes
           path: clang_format_fixes.patch
+          if-no-files-found: ignore
 
       # --------- rosdep / build / test ----------
       - name: rosdep install
