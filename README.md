@@ -122,7 +122,7 @@ source install/setup.bash
 ros2 launch arm_bringup pick_and_place.demo.launch.py
 </code></pre>
 </td>
-<td width="50%" align="center" valign="top">
+<td width="min-width:460px;50%" align="center" valign="top">
 <img src="media/pick_and_place.gif" width="400" alt="Pick & Place Demo">
 </td>
 </tr>
@@ -150,7 +150,7 @@ circle_cartesian.demo.launch.py \
   num_points:=80 point_duration:=0.30
 </code></pre>
 </td>
-<td width="50%" align="center" valign="top">
+<td width="min-width:460px;50%" align="center" valign="top">
 <img src="media/circle_cartesian.gif" width="400" alt="Cartesian Circle Demo">
 </td>
 </tr>
@@ -162,10 +162,22 @@ circle_cartesian.demo.launch.py \
 
 Publishes RViz `visualization_msgs/Marker` traces for joint trajectories.
 
-    source /opt/ros/$ROS_DISTRO/setup.bash
-    source install/setup.bash
+    
 
-    ros2 launch arm_bringup joint_traj_viz.launch.py
+<table>
+<tr>
+<td width="50%" valign="top">
+<pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
+source install/setup.bash
+ros2 launch arm_bringup \
+joint_traj_viz.launch.py
+</code></pre>
+</td>
+<td width="min-width:460px;50%" align="center" valign="top">
+<img src="media/trajectory_plotting.gif" width="400" alt="Trajectory Plotting">
+</td>
+</tr>
+</table>
 
 ---
 
