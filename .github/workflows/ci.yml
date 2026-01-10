@@ -75,7 +75,9 @@ jobs:
 
           source /opt/ros/$ROS_DISTRO/setup.bash
 
-          ament_clang_format --config .clang-format --reformat src include
+          # IMPORTANT: ament_clang_format may return exit code 1 even after reformatting.
+          # Don't let set -e abort here.
+          ament_clang_format --config .clang-format --reformat src include || true
 
           echo "Git status after reformat:"
           git status --porcelain || true
