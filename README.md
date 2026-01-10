@@ -59,7 +59,7 @@ advanced manipulation topics such as MoveIt2, impedance control, and real hardwa
 
 ## Tech Stack
 
-- ROS2 (Jazzy / Humble)
+- ROS2 (Jazzy)
 - C++ (`rclcpp`) + Python (`rclpy`)
 - Gazebo (`gz sim`)
 - `ros2_control` + `ros2_controllers`
@@ -71,8 +71,8 @@ advanced manipulation topics such as MoveIt2, impedance control, and real hardwa
 
 ### System requirements
 
-- Linux (tested on Ubuntu 22.04 / 24.04)
-- ROS2 **Humble** (Ubuntu 22.04) or **Jazzy** (Ubuntu 24.04)
+- Linux (tested on Ubuntu 24.04)
+- ROS2 **Jazzy** (Ubuntu 24.04)
 
 ### Build & setup (copy-paste ready)
 
