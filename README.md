@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/ROS2-Jazzy%20%7C%20Humble-blue">
+  <img src="https://img.shields.io/badge/ROS2-Jazzy-blue">
   <img src="https://img.shields.io/badge/Language-C%2B%2B%20%7C%20Python-informational">
   <img src="https://img.shields.io/github/license/USER/ros2_6dof_arm_control">
 </p>
@@ -114,17 +114,18 @@ Starts Gazebo simulation, spawns the UR5, ensures controllers are active,
 runs `go_to_pose_node`, and executes a predefined target sequence.
 
 <table>
-  <tr>
-    <td valign="top">
-      <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
+<tr>
+<td width="50%" valign="top">
+<pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
-ros2 launch arm_bringup pick_and_place.demo.launch.py</code></pre>
-    </td>
-    <td valign="top" width="45%">
-      <img src="media/pick_and_place.gif" width="420">
-    </td>
-  </tr>
+ros2 launch arm_bringup pick_and_place.demo.launch.py
+</code></pre>
+</td>
+<td width="50%" align="center" valign="top">
+<img src="media/pick_and_place.gif" width="400" alt="Pick & Place Demo">
+</td>
+</tr>
 </table>
 
 ---
@@ -134,22 +135,22 @@ ros2 launch arm_bringup pick_and_place.demo.launch.py</code></pre>
 Runs a Cartesian circle by generating TCP waypoints and solving IK for each point.
 
 <table>
-  <tr>
-    <td valign="top">
-      <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
+<tr>
+<td width="50%" valign="top">
+<pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
-ros2 launch arm_bringup circle_cartesian.demo.launch.py</code></pre>
-
-      <p><b>Optional arguments:</b></p>
-
-      <pre><code>ros2 launch arm_bringup circle_cartesian.demo.launch.py \
-  radius:=0.18 plane:=xy loops:=2 num_points:=80 point_duration:=0.30</code></pre>
-    </td>
-    <td valign="top" width="45%">
-      <img src="media/circle_cartesian.gif" width="420">
-    </td>
-  </tr>
+ros2 launch arm_bringup circle_cartesian.demo.launch.py
+</code></pre>
+<strong>Optional arguments:</strong>
+<pre><code>ros2 launch arm_bringup circle_cartesian.demo.launch.py \
+  radius:=0.18 plane:=xy loops:=2 num_points:=80 point_duration:=0.30
+</code></pre>
+</td>
+<td width="50%" align="center" valign="top">
+<img src="media/circle_cartesian.gif" width="400" alt="Cartesian Circle Demo">
+</td>
+</tr>
 </table>
 
 ---
