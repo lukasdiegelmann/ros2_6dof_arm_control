@@ -44,7 +44,16 @@ jobs:
             clang-format \
             ros-${ROS_DISTRO}-ament-clang-format
 
-            - name: C++ format (clang-format) - check
+      - name: Ensure .clang-format exists
+        shell: bash
+        run: |
+          set -e
+          if [ ! -f .clang-format ]; then
+            echo "No .clang-format found. Generating default (LLVM) config..."
+            clang-format -style=LLVM -dump-config > .clang-format
+          fi
+
+      - name: C++ format (clang-format) - check
         id: clang_check
         shell: bash
         run: |
@@ -67,7 +76,7 @@ jobs:
           # Apply formatting in-place
           ament_clang_format --config .clang-format --reformat src include
 
-          # Create patch (even if empty, we handle that)
+          # Create patch
           git diff > clang_format_fixes.patch || true
 
           echo "Changed files:"
