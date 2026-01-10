@@ -123,7 +123,7 @@ ros2 launch arm_bringup pick_and_place.demo.launch.py
 </code></pre>
 </td>
 <td width="min-width:460px;50%" align="center" valign="top">
-<img src="media/pick_and_place.gif" width="400" alt="Pick & Place Demo">
+<img src="media/pick_and_place.gif" style="min-width:400px;max-width:400px" alt="Pick & Place Demo">
 </td>
 </tr>
 </table>
@@ -151,7 +151,7 @@ circle_cartesian.demo.launch.py \
 </code></pre>
 </td>
 <td width="min-width:460px;50%" align="center" valign="top">
-<img src="media/circle_cartesian.gif" width="400" alt="Cartesian Circle Demo">
+<img src="media/circle_cartesian.gif" style="min-width:400px;max-width:400px" alt="Cartesian Circle Demo">
 </td>
 </tr>
 </table>
@@ -174,7 +174,7 @@ joint_traj_viz.launch.py
 </code></pre>
 </td>
 <td width="min-width:460px;50%" align="center" valign="top">
-<img src="media/trajectory_plotting.gif" width="400" alt="Trajectory Plotting">
+<img src="media/trajectory_plotting.gif" style="min-width:400px;max-width:400px" alt="Trajectory Plotting">
 </td>
 </tr>
 </table>
