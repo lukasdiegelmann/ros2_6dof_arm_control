@@ -10,9 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - ubuntu: ubuntu-22.04
-            ros_distro: hum
-            container: ros:humble-ros-base
           - ubuntu: ubuntu-24.04
             ros_distro: jazzy
             container: ros:jazzy-ros-base
