@@ -3,8 +3,6 @@
 ROS2-based 6-DOF robotic arm control stack with inverse kinematics, trajectory planning,
 joint limits, and RViz/Gazebo visualization.
 
-![Pick and Place Demo](media/pick_and_place.gif)
-
 > Planned first release tag: **v0.1-mvp** (repo is prepared for release; no git tag created here).
 
 ## Key Features
@@ -18,7 +16,7 @@ joint limits, and RViz/Gazebo visualization.
 
 ## Tech Stack
 
-- ROS2 (Humble / Jazzy)
+- ROS2 (Jazzy)
 - C++ (rclcpp) + Python (rclpy)
 - Gazebo (gz sim)
 - ros2_control + ros2_controllers
@@ -68,6 +66,8 @@ All demo launch files live in `arm_bringup`.
 Starts Gazebo sim, spawns the UR5, ensures controllers are active, runs `go_to_pose_node`,
 and executes a demo target sequence.
 
+![Pick and Place Demo](media/pick_and_place.gif)
+
 ```bash
 source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
@@ -78,6 +78,8 @@ ros2 launch arm_bringup pick_and_place.demo.launch.py
 ### Cartesian circle (draw_circle_cartesian)
 
 Runs a cartesian circle by generating TCP waypoints and solving IK for each point.
+
+![Cartesian Circle Demo](media/circle_cartesian.gif)
 
 ```bash
 source /opt/ros/$ROS_DISTRO/setup.bash
@@ -111,6 +113,19 @@ source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
 ros2 launch arm_bringup rviz.launch.py
+```
+
+This launch starts RViz2 with a preconfigured file:
+
+- Config: `arm_bringup/config/rviz/default.rviz`
+- Fixed Frame: `world` (URDF contains a `world` link with a fixed joint to `base_link`)
+- Robot visualization: `RobotModel` + `TF` (RobotModel is driven by TF, typically from `robot_state_publisher` fed by `/joint_states`)
+- Trajectory visualization (no MoveIt2 here): MarkerArray on `/joint_traj_viz` (published by `arm_apps/joint_trajectory_viz_node`)
+
+Optional plotting:
+
+```bash
+ros2 launch arm_bringup rviz.launch.py use_rqt_plot:=true plot_joint_count:=6
 ```
 
 ### One-shot pose command (CLI)
@@ -173,4 +188,3 @@ ros2 run arm_apps go_to_pose --x 0.45 --y 0.15 --z 0.25 --roll 0 --pitch 0 --yaw
 
 - Developed a ROS2-based 6-DOF robotic arm control stack with IK, joint-limit enforcement, and trajectory planning, demonstrated via Pick & Place and Cartesian motion demos.
 - Built a modular ROS2 architecture with RViz and Gazebo integration, enabling reproducible simulation, visualization, and evaluation of motion quality.
-

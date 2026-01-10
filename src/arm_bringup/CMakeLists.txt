@@ -22,9 +22,15 @@ install(DIRECTORY worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
+# install RViz config(s)
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
+
 # install helper scripts
 install(PROGRAMS
   scripts/ensure_controllers_active
+  scripts/ee_trail
   DESTINATION lib/${PROJECT_NAME}
 )
 

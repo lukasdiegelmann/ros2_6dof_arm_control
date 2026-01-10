@@ -117,6 +117,22 @@ def generate_launch_description():
         actions=[draw_circle_node],
     )
 
+    ee_trail_node = Node(
+        package="arm_bringup",
+        executable="ee_trail",
+        name="ee_trail",
+        output="screen",
+        parameters=[
+            {"use_sim_time": use_sim_time},
+            {"output_frame": "base_link"},
+            {"tip_frame": "ee_link"},
+            {"topic": "/ee_trail"},
+            {"publish_rate_hz": 30.0},
+            {"max_points": 4000},
+            {"line_width": 0.004},
+        ],
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument("use_sim_time", default_value="true"),
@@ -130,19 +146,23 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "start_delay_s",
                 default_value="6.0",
-                description="Seconds to wait before starting draw_circle_cartesian_node (lets controllers + /joint_states come up)",
+                description=(
+                    "Seconds to wait before starting draw_circle_cartesian_node "
+                    "(lets controllers + /joint_states come up)"
+                ),
             ),
             # Bigger default circle so motion is clearly visible
             DeclareLaunchArgument("radius", default_value="0.18"),
             DeclareLaunchArgument("plane", default_value="xy"),
             DeclareLaunchArgument("num_points", default_value="80"),
             DeclareLaunchArgument("loops", default_value="2"),
-            DeclareLaunchArgument("point_duration", default_value="0.30"),
+            DeclareLaunchArgument("point_duration", default_value="0.15"),
             DeclareLaunchArgument("pause_s", default_value="0.0"),
-            DeclareLaunchArgument("vel_scale", default_value="0.8"),
-            DeclareLaunchArgument("max_acc", default_value="3.0"),
+            DeclareLaunchArgument("vel_scale", default_value="1.0"),
+            DeclareLaunchArgument("max_acc", default_value="6.0"),
             sim_launch,
             go_to_pose_node,
+            ee_trail_node,
             delayed_circle,
         ]
     )

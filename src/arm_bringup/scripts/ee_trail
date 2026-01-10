@@ -1,0 +1,187 @@
+#!/usr/bin/env python3
+
+import math
+from collections import deque
+from dataclasses import dataclass
+from typing import Deque, Optional
+
+import rclpy
+from rclpy.exceptions import ParameterAlreadyDeclaredException
+from rclpy.node import Node
+from rclpy.time import Time
+
+from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker
+
+from tf2_ros import Buffer, TransformListener
+
+@dataclass
+class ColorRGBA:
+    r: float
+    g: float
+    b: float
+    a: float
+
+
+class EeTrailNode(Node):
+    def __init__(self) -> None:
+        super().__init__("ee_trail")
+
+        def _param_str(name: str, default: str) -> str:
+            value = self.get_parameter(name).value
+            return default if value is None else str(value)
+
+        def _param_float(name: str, default: float) -> float:
+            value = self.get_parameter(name).value
+            if value is None:
+                return float(default)
+            try:
+                if isinstance(value, (int, float)):
+                    return float(value)
+                return float(str(value))
+            except (TypeError, ValueError):
+                return float(default)
+
+        def _param_int(name: str, default: int) -> int:
+            value = self.get_parameter(name).value
+            if value is None:
+                return int(default)
+            try:
+                if isinstance(value, bool):
+                    return int(default)
+                if isinstance(value, int):
+                    return int(value)
+                return int(str(value))
+            except (TypeError, ValueError):
+                return int(default)
+
+        def _param_float_list(name: str, default: list[float]) -> list[float]:
+            value = self.get_parameter(name).value
+            if value is None:
+                return list(default)
+            if not isinstance(value, (list, tuple)):
+                return list(default)
+            out: list[float] = []
+            for item in value:
+                try:
+                    out.append(float(item))
+                except (TypeError, ValueError):
+                    out.append(1.0)
+            return out
+
+        def declare_if_needed(name: str, default_value):
+            try:
+                self.declare_parameter(name, default_value)
+            except ParameterAlreadyDeclaredException:
+                pass
+
+        # NOTE: When parameters are passed via launch/CLI, rclpy may already
+        # declare them from overrides. Declaring again would crash the node.
+        declare_if_needed("use_sim_time", True)
+        declare_if_needed("output_frame", "base_link")
+        declare_if_needed("tip_frame", "ee_link")
+        declare_if_needed("topic", "/ee_trail")
+        declare_if_needed("publish_rate_hz", 30.0)
+        declare_if_needed("max_points", 3000)
+        declare_if_needed("line_width", 0.004)
+        declare_if_needed("z_offset", 0.0)
+        declare_if_needed("color", [0.1, 1.0, 0.1, 1.0])
+
+        self.output_frame = _param_str("output_frame", "base_link")
+        self.tip_frame = _param_str("tip_frame", "ee_link")
+        topic = _param_str("topic", "/ee_trail")
+
+        publish_rate_hz = _param_float("publish_rate_hz", 30.0)
+        if not math.isfinite(publish_rate_hz) or publish_rate_hz <= 0.0:
+            publish_rate_hz = 30.0
+
+        self.max_points = _param_int("max_points", 3000)
+        if self.max_points <= 0:
+            self.max_points = 3000
+
+        self.line_width = _param_float("line_width", 0.004)
+        if not math.isfinite(self.line_width) or self.line_width <= 0.0:
+            self.line_width = 0.004
+
+        self.z_offset = _param_float("z_offset", 0.0)
+        if not math.isfinite(self.z_offset):
+            self.z_offset = 0.0
+
+        color_list = _param_float_list("color", [0.1, 1.0, 0.1, 1.0])
+        while len(color_list) < 4:
+            color_list.append(1.0)
+        self.color = ColorRGBA(
+            r=float(color_list[0]),
+            g=float(color_list[1]),
+            b=float(color_list[2]),
+            a=float(color_list[3]),
+        )
+
+        self.pub = self.create_publisher(Marker, topic, 10)
+
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
+        self.points: Deque[Point] = deque(maxlen=self.max_points)
+        self._last_tf_warn: Optional[float] = None
+
+        period_s = 1.0 / publish_rate_hz
+        self.timer = self.create_timer(period_s, self.on_timer)
+
+        self.get_logger().info(
+            f"ee_trail ready. Publishing Marker LINE_STRIP on {topic} (output_frame={self.output_frame}, tip_frame={self.tip_frame})"
+        )
+
+    def on_timer(self) -> None:
+        try:
+            tf = self.tf_buffer.lookup_transform(
+                self.output_frame,
+                self.tip_frame,
+                Time(),
+            )
+        except Exception as ex:
+            # Throttle warnings to ~1Hz
+            now_s = self.get_clock().now().nanoseconds / 1e9
+            if self._last_tf_warn is None or (now_s - self._last_tf_warn) > 1.0:
+                self._last_tf_warn = now_s
+                self.get_logger().warn(
+                    f"TF lookup failed ({self.output_frame} -> {self.tip_frame}): {ex}"
+                )
+            return
+
+        p = Point()
+        p.x = float(tf.transform.translation.x)
+        p.y = float(tf.transform.translation.y)
+        p.z = float(tf.transform.translation.z) + self.z_offset
+        self.points.append(p)
+
+        m = Marker()
+        m.header.frame_id = self.output_frame
+        m.header.stamp = self.get_clock().now().to_msg()
+        m.ns = "ee_trail"
+        m.id = 0
+        m.type = Marker.LINE_STRIP
+        m.action = Marker.ADD
+        m.pose.orientation.w = 1.0
+        m.scale.x = self.line_width
+        m.color.r = self.color.r
+        m.color.g = self.color.g
+        m.color.b = self.color.b
+        m.color.a = self.color.a
+        m.points = list(self.points)
+
+        self.pub.publish(m)
+
+
+def main() -> None:
+    rclpy.init()
+    node = EeTrailNode()
+    try:
+        rclpy.spin(node)
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()
