@@ -66,7 +66,7 @@ All demo launch files live in `arm_bringup`.
 Starts Gazebo sim, spawns the UR5, ensures controllers are active, runs `go_to_pose_node`,
 and executes a demo target sequence.
 
-![Pick and Place Demo](media/pick_and_place.gif)
+<img src="media/pick_and_place.gif" width="250">
 
 ```bash
 source /opt/ros/$ROS_DISTRO/setup.bash
@@ -79,7 +79,7 @@ ros2 launch arm_bringup pick_and_place.demo.launch.py
 
 Runs a cartesian circle by generating TCP waypoints and solving IK for each point.
 
-![Cartesian Circle Demo](media/circle_cartesian.gif)
+<img src="media/circle_cartesian.gif" width="250">
 
 ```bash
 source /opt/ros/$ROS_DISTRO/setup.bash
