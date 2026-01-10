@@ -122,10 +122,15 @@ source install/setup.bash
 ros2 launch arm_bringup pick_and_place.demo.launch.py
 </code></pre>
 </td>
-<td style="min-width:460px;" width="50%" align="center" valign="top"><img src="media/pick_and_place.gif" style="min-width:400px;max-width:400px;" alt="Pick & Place Demo">
+<td width="50%" align="center" valign="top">
+<img src="media/pick_and_place.gif" width="400" alt="Pick & Place Demo">
 </td>
 </tr>
 </table>
+
+<p align="center">
+  <img src="media/pick_and_place.gif" width="400" alt="Pick & Place Demo">
+</p>
 
 ---
 
@@ -149,10 +154,15 @@ circle_cartesian.demo.launch.py \
   num_points:=80 point_duration:=0.30
 </code></pre>
 </td>
-<td style="min-width:460px;" width="50%" align="center" valign="top"><img src="media/circle_cartesian.gif" style="min-width:400px;max-width:400px;" alt="Cartesian Circle Demo">
+<td width="50%" align="center" valign="top">
+<img src="media/circle_cartesian.gif" width="400" alt="Cartesian Circle Demo">
 </td>
 </tr>
 </table>
+
+<p align="center">
+  <img src="media/circle_cartesian.gif" width="400" alt="Cartesian Circle Demo">
+</p>
 
 ---
 
@@ -171,11 +181,15 @@ ros2 launch arm_bringup \
 joint_traj_viz.launch.py
 </code></pre>
 </td>
-<td style="min-width:460px;" width="50%" align="center" valign="top">
-<img src="media/trajectory_plotting.gif" style="min-width:400px;max-width:400px;" alt="Trajectory Plotting">
+<td width="50%" align="center" valign="top">
+<img src="media/trajectory_plotting.gif" width="400" alt="Trajectory Plotting">
 </td>
 </tr>
 </table>
+
+<p align="center">
+  <img src="media/trajectory_plotting.gif" width="400" alt="Trajectory Plotting">
+</p>
 
 ---
 
