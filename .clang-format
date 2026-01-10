@@ -1,0 +1,62 @@
+# .clang-format
+# ROS 2 / modern C++ friendly style
+
+BasedOnStyle: Google
+Language: Cpp
+
+# --- Indentation & layout ---
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ContinuationIndentWidth: 4
+
+BreakBeforeBraces: Attach
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# --- Line length ---
+ColumnLimit: 100
+
+# --- Includes ---
+SortIncludes: true
+IncludeBlocks: Regroup
+
+# --- Spacing ---
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpaceAfterCStyleCast: true
+SpacesInAngles: false
+
+# --- Pointers & references ---
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+
+# --- Comments ---
+AlignTrailingComments: true
+CommentPragmas: '^ IWYU pragma:'
+
+# --- Templates ---
+AlwaysBreakTemplateDeclarations: Yes
+
+# --- Function formatting ---
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+
+# --- Namespaces ---
+NamespaceIndentation: All
+FixNamespaceComments: true
+
+# --- Misc ---
+DerivePointerAlignment: false
+ReflowComments: true
+IndentCaseLabels: true
+IndentGotoLabels: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# --- Preprocessor ---
+IndentPPDirectives: AfterHash
+
+# --- C++ specifics ---
+Standard: c++20
