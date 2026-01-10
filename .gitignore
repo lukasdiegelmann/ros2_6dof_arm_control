@@ -1,6 +1,33 @@
-build
-install
-log
-.vscode/browse.vc.db-shm
-.vscode/browse.vc.db-wal
-.vscode/browse.vc.db
+# Colcon / ROS2 build artifacts
+build/
+install/
+log/
+
+# Generated compilation database
+compile_commands.json
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Misc
+*.swp

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ubuntu: ubuntu-22.04
+            ros_distro: hum
+            container: ros:humble-ros-base
+          - ubuntu: ubuntu-24.04
+            ros_distro: jazzy
+            container: ros:jazzy-ros-base
+
+    runs-on: ${{ matrix.ubuntu }}
+    container:
+      image: ${{ matrix.container }}
+
+    env:
+      ROS_DISTRO: ${{ matrix.ros_distro }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build + lint tools
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git \
+            python3-pip \
+            python3-rosdep \
+            python3-colcon-common-extensions \
+            clang-format
+
+      - name: rosdep install
+        shell: bash
+        run: |
+          rosdep init || true
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y
+
+      - name: Build
+        shell: bash
+        run: |
+          source /opt/ros/$ROS_DISTRO/setup.bash
+          colcon build --symlink-install
+
+      - name: Test (if available)
+        shell: bash
+        run: |
+          source /opt/ros/$ROS_DISTRO/setup.bash
+          source install/setup.bash
+          colcon test --event-handlers console_direct+
+          if compgen -G "log/latest_test/*" > /dev/null; then
+            colcon test-result --verbose
+          else
+            echo "No test results found (no tests defined)."
+          fi
+
+      - name: Python format (black)
+        shell: bash
+        run: |
+          python3 -m pip install --no-cache-dir -r requirements.txt
+          black --check scripts src/arm_bringup/launch src/arm_bringup/scripts
+
+      - name: C++ format (clang-format)
+        shell: bash
+        run: |
+          files=$(find src -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \))
+          if [[ -n "$files" ]]; then
+            clang-format --version
+            clang-format --dry-run --Werror $files
+          fi
