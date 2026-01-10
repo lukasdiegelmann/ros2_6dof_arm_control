@@ -35,6 +35,50 @@ jobs:
             python3-rosdep \
             python3-colcon-common-extensions
 
+      # --------- C++ formatting (clang-format) ----------
+      - name: Install clang-format + ament wrapper
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            clang-format \
+            ros-${ROS_DISTRO}-ament-clang-format
+
+      - name: C++ format (clang-format) - check
+        id: clang_check
+        shell: bash
+        run: |
+          set -e
+          source /opt/ros/$ROS_DISTRO/setup.bash
+
+          # Uses .clang-format from repo root
+          # Limit paths here to whatever you actually have:
+          ament_clang_format --config .clang-format src include
+
+      - name: If clang-format fails, generate patch artifact
+        if: failure() && steps.clang_check.outcome == 'failure'
+        shell: bash
+        run: |
+          set -e
+          source /opt/ros/$ROS_DISTRO/setup.bash
+
+          # Reformat in-place so we can create a patch
+          ament_clang_format --config .clang-format --reformat src include
+
+          # Create a patch with the formatting fixes
+          git diff > clang_format_fixes.patch || true
+
+          echo "clang-format produced changes. A patch will be uploaded as an artifact."
+          git --no-pager diff --stat || true
+
+      - name: Upload clang-format patch artifact
+        if: failure() && steps.clang_check.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-format-fixes
+          path: clang_format_fixes.patch
+
+      # --------- rosdep / build / test ----------
       - name: rosdep install
         shell: bash
         run: |
@@ -60,6 +104,7 @@ jobs:
             echo "No test results found (no tests defined)."
           fi
 
+      # --------- Python formatting (black) ----------
       - name: Python format (black)
         shell: bash
         run: |
