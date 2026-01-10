@@ -140,11 +140,14 @@ Runs a Cartesian circle by generating TCP waypoints and solving IK for each poin
 <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
-ros2 launch arm_bringup circle_cartesian.demo.launch.py
+ros2 launch arm_bringup \\
+circle_cartesian.demo.launch.py
 </code></pre>
 <strong>Optional arguments:</strong>
-<pre><code>ros2 launch arm_bringup circle_cartesian.demo.launch.py \
-  radius:=0.18 plane:=xy loops:=2 num_points:=80 point_duration:=0.30
+<pre><code>ros2 launch arm_bringup \
+circle_cartesian.demo.launch.py \
+  radius:=0.18 plane:=xy loops:=2 \
+  num_points:=80 point_duration:=0.30
 </code></pre>
 </td>
 <td width="50%" align="center" valign="top">
