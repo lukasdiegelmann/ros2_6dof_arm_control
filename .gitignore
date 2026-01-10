@@ -6,6 +6,9 @@ log/
 # Generated compilation database
 compile_commands.json
 
+# Github
+patches/
+
 # IDEs
 .vscode/
 .idea/
