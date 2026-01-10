@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG ROS_DISTRO=humble
+ARG ROS_DISTRO=jazzy
 FROM ros:${ROS_DISTRO}-ros-base
 
 SHELL ["/bin/bash", "-c"]

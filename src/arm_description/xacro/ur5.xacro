@@ -353,9 +353,9 @@
 
   <!-- Gazebo plugin for ros2_control -->
   <gazebo>
-    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-      <parameters>$(find arm_control)/config/ros2_controllers.yaml</parameters>
-      <position_proportional_gain>$(arg position_proportional_gain)</position_proportional_gain>
+    <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find-pkg-share arm_control)/config/ros2_controllers.yaml</parameters>
+      <position_proportional_gain>${position_proportional_gain}</position_proportional_gain>
     </plugin>
   </gazebo>
 

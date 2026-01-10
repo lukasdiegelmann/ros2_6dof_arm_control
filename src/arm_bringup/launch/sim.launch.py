@@ -6,7 +6,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.substitutions import Command
 from launch.substitutions import LaunchConfiguration
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_prefix, get_package_share_directory
 
 def generate_launch_description():
     gz_verbosity = LaunchConfiguration("gz_verbosity")
@@ -15,6 +15,13 @@ def generate_launch_description():
 
     bringup_share = get_package_share_directory('arm_bringup')
     description_share = get_package_share_directory('arm_description')
+
+    gz_ros2_control_lib = os.path.join(get_package_prefix("gz_ros2_control"), "lib")
+
+    set_gz_system_plugin_path = SetEnvironmentVariable(
+        name="GZ_SIM_SYSTEM_PLUGIN_PATH",
+        value=gz_ros2_control_lib + ":" + os.environ.get("GZ_SIM_SYSTEM_PLUGIN_PATH", ""),
+    )
 
     xacro_path = os.path.join(description_share, 'xacro', 'ur5.xacro')
     # Command concatenates tokens without spaces, so we include the space explicitly
@@ -122,6 +129,7 @@ def generate_launch_description():
             description="gz_ros2_control internal position loop proportional gain (higher = stiffer, too high can oscillate).",
         ),
         set_gz_resource_path,
+        set_gz_system_plugin_path,
         gz_launch,
         rsp,
         clock_bridge,

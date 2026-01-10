@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:macro name="ur5_arm_gazebo" params="prefix">
-    
+
     <!-- Base link material - light grey metal -->
     <gazebo reference="${prefix}base_link">
       <mu1>0.2</mu1>
