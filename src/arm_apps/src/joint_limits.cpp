@@ -41,6 +41,7 @@ namespace arm_apps
             lim.min_position = -inf;
             lim.max_position = inf;
             lim.max_velocity = inf;
+            lim.max_acceleration = inf;
 
             urdf::JointConstSharedPtr joint = model.getJoint(name);
             if (joint)
@@ -117,5 +118,28 @@ namespace arm_apps
         }
 
         return true;
+    }
+
+    size_t JointLimits::dof() const
+    {
+        return limits_.size();
+    }
+
+    double JointLimits::maxVelocity(size_t idx) const
+    {
+        if (idx >= limits_.size())
+        {
+            throw std::runtime_error("JointLimits::maxVelocity: idx out of range");
+        }
+        return limits_[idx].max_velocity;
+    }
+
+    double JointLimits::maxAcceleration(size_t idx) const
+    {
+        if (idx >= limits_.size())
+        {
+            throw std::runtime_error("JointLimits::maxAcceleration: idx out of range");
+        }
+        return limits_[idx].max_acceleration;
     }
 }

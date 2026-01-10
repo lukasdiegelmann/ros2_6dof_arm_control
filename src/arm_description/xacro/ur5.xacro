@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <robot name="ur5" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- Tuning for gz_ros2_control internal position loop. -->
+  <xacro:arg name="position_proportional_gain" default="0.1" />
+
   <xacro:include filename="$(find arm_description)/xacro/ur5.transmission.xacro" />
   <xacro:include filename="$(find arm_description)/xacro/ur5.gazebo.xacro" />
 
@@ -300,7 +303,6 @@
 
     <xacro:ur5_arm_transmission prefix="${prefix}" />
     <xacro:ur5_arm_gazebo prefix="${prefix}" />
-
   </xacro:macro>
 
   <!-- Instantiate the robot -->
@@ -353,6 +355,7 @@
   <gazebo>
     <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
       <parameters>$(find arm_control)/config/ros2_controllers.yaml</parameters>
+      <position_proportional_gain>$(arg position_proportional_gain)</position_proportional_gain>
     </plugin>
   </gazebo>
 

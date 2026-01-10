@@ -27,3 +27,8 @@ joint_trajectory_controller:
     state_publish_rate: 50.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
+
+    # This controller version supports interpolation_method in {splines, none}.
+    # Keep splines enabled; we also publish velocities in trajectories to avoid
+    # stop/go artifacts with positions-only points.
+    interpolation_method: splines

@@ -37,7 +37,9 @@
 
     <!-- Optional: Physik -->
     <physics name="physics" type="ignored">
-      <max_step_size>0.001</max_step_size>
+      <!-- 1ms steps (1000Hz) can overload slower machines and cause visible stutters/jumps.
+           The controllers run at 100Hz, so a 4ms step is typically sufficient here. -->
+      <max_step_size>0.004</max_step_size>
       <real_time_factor>1.0</real_time_factor>
     </physics>
 

@@ -1,0 +1,33 @@
+# Demo targets for arm_apps/demo_sequence
+# Format:
+# targets:
+#   - position: [x, y, z]
+#     rpy: [roll, pitch, yaw]
+#     # frame_id is optional; defaults to base_link
+#
+# Note: These are example poses intended for a UR5-like arm in simulation.
+# If IK fails, adjust positions/orientations to be within your reachable workspace.
+
+targets:
+  - position: [0.4, 0.0, 0.4]   # above pick
+    rpy: [0, 1.57, 0]
+
+  - position: [0.4, 0.0, 0.2]   # pick
+    rpy: [0, 1.57, 0]
+
+  - position: [0.4, 0.0, 0.4]   # lift
+    rpy: [0, 1.57, 0]
+
+  - position: [0.2, 0.3, 0.4]   # move
+    rpy: [0, 1.57, 0]
+
+  - position: [0.2, 0.3, 0.2]   # place
+    rpy: [0, 1.57, 0]
+
+  - position: [0.2, 0.3, 0.4]   # lift after place
+    rpy: [0, 1.57, 0]
+
+  - position: [0.4, 0.0, 0.4]   # home
+    rpy: [0, 1.57, 0]
+
+

@@ -20,6 +20,7 @@ namespace arm_apps
         double min_position;
         double max_position;
         double max_velocity;
+        double max_acceleration;
     };
 
     /**
@@ -65,6 +66,25 @@ namespace arm_apps
          * @throws std::runtime_error if @p q size differs from the number of cached limits.
          */
         bool withinLimits(const std::vector<double> &q) const;
+
+        /**
+         * @brief Number of joints (DoF) this JointLimits instance covers.
+         */
+        size_t dof() const;
+
+        /**
+         * @brief Max velocity limit for joint @p idx.
+         *
+         * Returns +inf if unknown (as loaded from URDF), or throws if idx is out of range.
+         */
+        double maxVelocity(size_t idx) const;
+
+        /**
+         * @brief Max acceleration limit for joint @p idx.
+         *
+         * Returns +inf if unknown (as loaded from URDF), or throws if idx is out of range.
+         */
+        double maxAcceleration(size_t idx) const;
 
     private:
         std::vector<JointLimit> limits_;

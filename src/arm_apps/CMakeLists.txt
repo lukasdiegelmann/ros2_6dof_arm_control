@@ -12,13 +12,28 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(action_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(yaml-cpp REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(urdf REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(controller_manager_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/GoToPose.action"
+  DEPENDENCIES geometry_msgs action_msgs
+)
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 # instructions for build the go_to_pose_node executable
 add_executable(go_to_pose_node
@@ -27,6 +42,7 @@ add_executable(go_to_pose_node
   src/joint_limits.cpp
   src/joint_mapping.cpp
   src/ik_dls.cpp
+  src/joint_trajectory.cpp
 )
 
 # for building the go_to_pose_node executable, also search for header files
@@ -35,13 +51,16 @@ target_include_directories(go_to_pose_node PUBLIC include)
 
 # Eigen3::Eigen is not linked automatically, for building go_to_pose_node
 target_link_libraries(go_to_pose_node Eigen3::Eigen) 
+target_link_libraries(go_to_pose_node "${cpp_typesupport_target}")
 
 # tell the build system which packages to link for go_to_pose_node
 ament_target_dependencies(go_to_pose_node
   rclcpp
+  rclcpp_action
   sensor_msgs
   geometry_msgs
   trajectory_msgs
+  action_msgs
   kdl_parser
   orocos_kdl
   urdf
@@ -61,12 +80,80 @@ ament_target_dependencies(go_to_pose
   tf2_geometry_msgs
 )
 
+# demo_sequence_node executable (YAML targets -> Action goals)
+add_executable(demo_sequence_node
+  src/demo_sequence_node.cpp
+)
+
+target_include_directories(demo_sequence_node PUBLIC include)
+target_link_libraries(demo_sequence_node yaml-cpp)
+target_link_libraries(demo_sequence_node "${cpp_typesupport_target}")
+
+ament_target_dependencies(demo_sequence_node
+  rclcpp
+  sensor_msgs
+  geometry_msgs
+  tf2
+  tf2_geometry_msgs
+  rclcpp_action
+  ament_index_cpp
+  action_msgs
+  controller_manager_msgs
+)
+
+# draw_circle_cartesian_node executable (Cartesian circle -> Action goals)
+add_executable(draw_circle_cartesian_node
+  src/draw_circle_cartesian_node.cpp
+)
+
+target_include_directories(draw_circle_cartesian_node PUBLIC include)
+target_link_libraries(draw_circle_cartesian_node "${cpp_typesupport_target}")
+
+ament_target_dependencies(draw_circle_cartesian_node
+  rclcpp
+  rclcpp_action
+  sensor_msgs
+  geometry_msgs
+  tf2
+  tf2_geometry_msgs
+  action_msgs
+)
+
+# joint_trajectory_viz_node executable (JointState -> RViz MarkerArray)
+add_executable(joint_trajectory_viz_node
+  src/joint_trajectory_viz_node.cpp
+)
+
+ament_target_dependencies(joint_trajectory_viz_node
+  rclcpp
+  sensor_msgs
+  trajectory_msgs
+  visualization_msgs
+  geometry_msgs
+  std_srvs
+)
+
 # install the go_to_pose_node and go_to_pose executables
 install(TARGETS
   go_to_pose_node
   go_to_pose
+  demo_sequence_node
+  draw_circle_cartesian_node
+  joint_trajectory_viz_node
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  action
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_export_dependencies(rosidl_default_runtime)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

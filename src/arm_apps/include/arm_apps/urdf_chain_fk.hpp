@@ -81,4 +81,4 @@ namespace arm_apps
         std::vector<std::string> joint_names_;
     };
 
-} // namespace arm_apps
+}

@@ -1,0 +1,20 @@
+# Goal
+geometry_msgs/PoseStamped target
+float64 vel_scale
+float64 max_acc
+int32 num_waypoints
+float64 desired_duration
+---
+# Result
+bool success
+string message
+float64 planned_duration
+int32 iterations
+float64 pos_err
+float64 rot_err
+---
+# Feedback
+string stage          # "IK", "PLANNING", "PUBLISHING", "DONE", "FAILED"
+int32 iterations      # current if available
+float64 pos_err
+float64 rot_err

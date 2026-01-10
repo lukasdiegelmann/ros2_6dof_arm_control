@@ -1,18 +1,29 @@
 import os
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.substitutions import Command
+from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
+    gz_verbosity = LaunchConfiguration("gz_verbosity")
+    gz_headless = LaunchConfiguration("gz_headless")
+    position_proportional_gain = LaunchConfiguration("position_proportional_gain")
+
     bringup_share = get_package_share_directory('arm_bringup')
     description_share = get_package_share_directory('arm_description')
 
     xacro_path = os.path.join(description_share, 'xacro', 'ur5.xacro')
     # Command concatenates tokens without spaces, so we include the space explicitly
-    robot_description = Command(['xacro ', xacro_path])
+    robot_description = Command([
+        'xacro ',
+        xacro_path,
+        ' position_proportional_gain:=',
+        position_proportional_gain,
+    ])
 
     # Add both description and bringup shares to the resource path so meshes/worlds are found
     set_gz_resource_path = SetEnvironmentVariable(
@@ -26,12 +37,23 @@ def generate_launch_description():
 
     world_path = os.path.join(bringup_share, "worlds", "ur5_world.world")
 
+    # If headless, run server-only (no GUI). This helps determine whether perceived motion lags
+    # are just Gazebo rendering stutters.
     gz_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py")
         ),
         # pass world file via gz_args
-        launch_arguments={'gz_args': f'-r -v 4 {world_path}'}.items(),
+        launch_arguments={
+            'gz_args': [
+                '-r ',
+                gz_headless,
+                ' -v ',
+                gz_verbosity,
+                ' ',
+                world_path,
+            ]
+        }.items(),
     )
 
     rsp = Node(
@@ -62,51 +84,47 @@ def generate_launch_description():
         output="screen",
     )
 
-    # Controller spawners - delay to avoid race with gz_ros2_control / entity spawn.
-    # On slower machines the controller_manager services can appear before the hardware
-    # interfaces are fully ready, causing sporadic "Failed to configure controller".
-    delayed_jsb_spawner = TimerAction(
-        period=6.0,
+    # Ensure controllers are ACTIVE. This is more robust than using the spawner
+    # directly because it is idempotent (doesn't fail if controllers are already
+    # loaded/active) and retries configuration/activation until success or timeout.
+    ensure_controllers = TimerAction(
+        period=2.0,
         actions=[
             Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[
-                    "joint_state_broadcaster",
-                    "--controller-manager", "/controller_manager",
-                    "--controller-manager-timeout", "60",
-                    "--service-call-timeout", "60",
-                    "--switch-timeout", "60",
-                ],
+                package="arm_bringup",
+                executable="ensure_controllers_active",
                 output="screen",
-            )
-        ]
-    )
-
-    delayed_traj_spawner = TimerAction(
-        period=8.0,
-        actions=[
-            Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[
-                    "joint_trajectory_controller",
-                    "--controller-manager", "/controller_manager",
-                    "--controller-manager-timeout", "60",
-                    "--service-call-timeout", "60",
-                    "--switch-timeout", "60",
+                parameters=[
+                    {"controller_manager": "/controller_manager"},
+                    {"controllers": ["joint_state_broadcaster", "joint_trajectory_controller"]},
+                    {"timeout_s": 60.0},
+                    {"poll_period_s": 0.5},
+                    {"switch_timeout_s": 60.0},
                 ],
-                output="screen",
             )
-        ]
+        ],
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            "gz_verbosity",
+            default_value="1",
+            description="Gazebo (gz sim) verbosity level; higher values can cause stutters",
+        ),
+        DeclareLaunchArgument(
+            "gz_headless",
+            default_value="",
+            description="If set to '-s', runs gz sim server-only (no GUI). Leave empty for normal GUI.",
+        ),
+        DeclareLaunchArgument(
+            "position_proportional_gain",
+            default_value="0.3",
+            description="gz_ros2_control internal position loop proportional gain (higher = stiffer, too high can oscillate).",
+        ),
         set_gz_resource_path,
         gz_launch,
         rsp,
         clock_bridge,
         spawn,
-        delayed_jsb_spawner,
-        delayed_traj_spawner,
+        ensure_controllers,
     ])
