@@ -3,7 +3,7 @@
 ROS2-based 6-DOF robotic arm control stack with inverse kinematics, trajectory planning,
 joint limits, and RViz/Gazebo visualization.
 
-![Demo](media/demo.gif)
+![Pick and Place Demo](media/pick_and_place.gif)
 
 > Planned first release tag: **v0.1-mvp** (repo is prepared for release; no git tag created here).
 
