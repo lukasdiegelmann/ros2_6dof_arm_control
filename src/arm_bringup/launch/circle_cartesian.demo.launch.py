@@ -30,28 +30,34 @@ def generate_launch_description():
     vel_scale = LaunchConfiguration("vel_scale")
     max_acc = LaunchConfiguration("max_acc")
 
-    xacro_file = PathJoinSubstitution([
-        FindPackageShare("arm_description"),
-        "xacro",
-        "ur5.xacro",
-    ])
+    xacro_file = PathJoinSubstitution(
+        [
+            FindPackageShare("arm_description"),
+            "xacro",
+            "ur5.xacro",
+        ]
+    )
 
     robot_description = {
-        "robot_description": Command([
-            "xacro ",
-            xacro_file,
-            " position_proportional_gain:=",
-            position_proportional_gain,
-        ])
+        "robot_description": Command(
+            [
+                "xacro ",
+                xacro_file,
+                " position_proportional_gain:=",
+                position_proportional_gain,
+            ]
+        )
     }
 
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare("arm_bringup"),
-                "launch",
-                "sim.launch.py",
-            ])
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("arm_bringup"),
+                    "launch",
+                    "sim.launch.py",
+                ]
+            )
         ),
         launch_arguments={
             "gz_verbosity": gz_verbosity,
@@ -102,7 +108,7 @@ def generate_launch_description():
                 "point_duration": point_duration,
                 "continue_on_fail": False,
                 "log_csv": False,
-            }
+            },
         ],
     )
 
@@ -111,30 +117,32 @@ def generate_launch_description():
         actions=[draw_circle_node],
     )
 
-    return LaunchDescription([
-        DeclareLaunchArgument("use_sim_time", default_value="true"),
-        DeclareLaunchArgument(
-            "trajectory_topic",
-            default_value="/joint_trajectory_controller/joint_trajectory",
-        ),
-        DeclareLaunchArgument("gz_verbosity", default_value="1"),
-        DeclareLaunchArgument("gz_headless", default_value=""),
-        DeclareLaunchArgument("position_proportional_gain", default_value="0.3"),
-        DeclareLaunchArgument(
-            "start_delay_s",
-            default_value="6.0",
-            description="Seconds to wait before starting draw_circle_cartesian_node (lets controllers + /joint_states come up)",
-        ),
-        # Bigger default circle so motion is clearly visible
-        DeclareLaunchArgument("radius", default_value="0.18"),
-        DeclareLaunchArgument("plane", default_value="xy"),
-        DeclareLaunchArgument("num_points", default_value="80"),
-        DeclareLaunchArgument("loops", default_value="2"),
-        DeclareLaunchArgument("point_duration", default_value="0.30"),
-        DeclareLaunchArgument("pause_s", default_value="0.0"),
-        DeclareLaunchArgument("vel_scale", default_value="0.8"),
-        DeclareLaunchArgument("max_acc", default_value="3.0"),
-        sim_launch,
-        go_to_pose_node,
-        delayed_circle,
-    ])
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument("use_sim_time", default_value="true"),
+            DeclareLaunchArgument(
+                "trajectory_topic",
+                default_value="/joint_trajectory_controller/joint_trajectory",
+            ),
+            DeclareLaunchArgument("gz_verbosity", default_value="1"),
+            DeclareLaunchArgument("gz_headless", default_value=""),
+            DeclareLaunchArgument("position_proportional_gain", default_value="0.3"),
+            DeclareLaunchArgument(
+                "start_delay_s",
+                default_value="6.0",
+                description="Seconds to wait before starting draw_circle_cartesian_node (lets controllers + /joint_states come up)",
+            ),
+            # Bigger default circle so motion is clearly visible
+            DeclareLaunchArgument("radius", default_value="0.18"),
+            DeclareLaunchArgument("plane", default_value="xy"),
+            DeclareLaunchArgument("num_points", default_value="80"),
+            DeclareLaunchArgument("loops", default_value="2"),
+            DeclareLaunchArgument("point_duration", default_value="0.30"),
+            DeclareLaunchArgument("pause_s", default_value="0.0"),
+            DeclareLaunchArgument("vel_scale", default_value="0.8"),
+            DeclareLaunchArgument("max_acc", default_value="3.0"),
+            sim_launch,
+            go_to_pose_node,
+            delayed_circle,
+        ]
+    )

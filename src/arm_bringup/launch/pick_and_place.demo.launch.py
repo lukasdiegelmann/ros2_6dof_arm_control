@@ -7,6 +7,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+
 def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time")
     trajectory_topic = LaunchConfiguration("trajectory_topic")
@@ -21,21 +22,25 @@ def generate_launch_description():
     home_index = LaunchConfiguration("home_index")
     log_targets = LaunchConfiguration("log_targets")
 
-    xacro_file = PathJoinSubstitution([
-        FindPackageShare("arm_description"),
-        "xacro",
-        "ur5.xacro",
-    ])
+    xacro_file = PathJoinSubstitution(
+        [
+            FindPackageShare("arm_description"),
+            "xacro",
+            "ur5.xacro",
+        ]
+    )
 
     robot_description = {"robot_description": Command(["xacro ", xacro_file])}
 
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution([
-                FindPackageShare("arm_bringup"),
-                "launch",
-                "sim.launch.py",
-            ])
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("arm_bringup"),
+                    "launch",
+                    "sim.launch.py",
+                ]
+            )
         )
     )
 
@@ -73,28 +78,30 @@ def generate_launch_description():
                 "return_home_on_failure": return_home_on_failure,
                 "home_index": home_index,
                 "log_targets": log_targets,
-            }]
-        ,
+            },
+        ],
         condition=IfCondition(run_demo),
     )
 
-    return LaunchDescription([
-        DeclareLaunchArgument("use_sim_time", default_value="true"),
-        DeclareLaunchArgument(
-            "trajectory_topic",
-            default_value="/joint_trajectory_controller/joint_trajectory",
-        ),
-        DeclareLaunchArgument("run_demo", default_value="true"),
-        DeclareLaunchArgument("vel_scale", default_value="0.8"),
-        DeclareLaunchArgument("max_acc", default_value="3.0"),
-        DeclareLaunchArgument("num_waypoints", default_value="30"),
-        DeclareLaunchArgument("desired_duration", default_value="0.0"),
-        DeclareLaunchArgument("pause_s", default_value="0.0"),
-        DeclareLaunchArgument("continue_on_failure", default_value="false"),
-        DeclareLaunchArgument("return_home_on_failure", default_value="true"),
-        DeclareLaunchArgument("home_index", default_value="-1"),
-        DeclareLaunchArgument("log_targets", default_value="true"),
-        sim_launch,
-        go_to_pose_node,
-        demo_sequence_node,
-    ])
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument("use_sim_time", default_value="true"),
+            DeclareLaunchArgument(
+                "trajectory_topic",
+                default_value="/joint_trajectory_controller/joint_trajectory",
+            ),
+            DeclareLaunchArgument("run_demo", default_value="true"),
+            DeclareLaunchArgument("vel_scale", default_value="0.8"),
+            DeclareLaunchArgument("max_acc", default_value="3.0"),
+            DeclareLaunchArgument("num_waypoints", default_value="30"),
+            DeclareLaunchArgument("desired_duration", default_value="0.0"),
+            DeclareLaunchArgument("pause_s", default_value="0.0"),
+            DeclareLaunchArgument("continue_on_failure", default_value="false"),
+            DeclareLaunchArgument("return_home_on_failure", default_value="true"),
+            DeclareLaunchArgument("home_index", default_value="-1"),
+            DeclareLaunchArgument("log_targets", default_value="true"),
+            sim_launch,
+            go_to_pose_node,
+            demo_sequence_node,
+        ]
+    )
