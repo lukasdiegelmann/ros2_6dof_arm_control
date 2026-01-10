@@ -62,7 +62,7 @@ jobs:
           source /opt/ros/$ROS_DISTRO/setup.bash
           ament_clang_format --config .clang-format src include
 
-      - name: Generate clang-format patch (if needed)
+            - name: Generate clang-format patch (if needed)
         shell: bash
         run: |
           set -e
@@ -73,20 +73,36 @@ jobs:
             exit 0
           fi
 
-          source /opt/ros/$ROS_DISTRO/setup.bash
+          # Ensure clang-format is available
+          clang-format --version
 
-          # IMPORTANT: ament_clang_format may return exit code 1 even after reformatting.
-          # Don't let set -e abort here.
-          ament_clang_format --config .clang-format --reformat src include || true
+          # Apply clang-format in-place to all C/C++ files under src/ and include/ (if they exist)
+          # This is deterministic and will actually modify files when needed.
+          if [ -d src ]; then
+            find src -type f \( -name "*.cpp" -o -name "*.cc" -o -name "*.cxx" -o -name "*.h" -o -name "*.hpp" -o -name "*.hh" \) \
+              -print -exec clang-format -i {} +
+          fi
+
+          if [ -d include ]; then
+            find include -type f \( -name "*.h" -o -name "*.hpp" -o -name "*.hh" \) \
+              -print -exec clang-format -i {} +
+          fi
 
           echo "Git status after reformat:"
           git status --porcelain || true
 
+          # Create patch
           git diff > clang_format_fixes.patch || true
 
           echo "Patch file info:"
           ls -lah clang_format_fixes.patch || true
           wc -l clang_format_fixes.patch || true
+
+          # If patch is empty, remove it so upload-artifact can be configured to ignore or error as you prefer
+          if [ ! -s clang_format_fixes.patch ]; then
+            echo "Patch is empty; removing."
+            rm -f clang_format_fixes.patch
+          fi
 
       - name: Upload clang-format patch artifact
         if: steps.clang_check.outcome == 'failure'
