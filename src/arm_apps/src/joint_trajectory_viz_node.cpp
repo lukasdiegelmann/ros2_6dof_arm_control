@@ -1,80 +1,78 @@
-#include <rclcpp/rclcpp.hpp>
-
-#include <sensor_msgs/msg/joint_state.hpp>
-#include <trajectory_msgs/msg/joint_trajectory.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
-#include <visualization_msgs/msg/marker.hpp>
-#include <geometry_msgs/msg/point.hpp>
-#include <std_msgs/msg/color_rgba.hpp>
-#include <std_srvs/srv/empty.hpp>
-
-#include <deque>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <optional>
-#include <cmath>
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <deque>
+#include <geometry_msgs/msg/point.hpp>
+#include <optional>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <std_srvs/srv/empty.hpp>
+#include <string>
+#include <trajectory_msgs/msg/joint_trajectory.hpp>
+#include <unordered_map>
+#include <vector>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace {
-struct Sample {
-  rclcpp::Time t;
-  double q;
-};
+  struct Sample {
+    rclcpp::Time t;
+    double q;
+  };
 
-struct Rgb {
-  float r;
-  float g;
-  float b;
-};
+  struct Rgb {
+    float r;
+    float g;
+    float b;
+  };
 
-Rgb hsvToRgb(float h, float s, float v) {
-  const float c = v * s;
-  const float h_nonneg = (h < 0.0f) ? 0.0f : h;
-  const float h_prime = std::fmod(h_nonneg, 1.0f) * 6.0f;
-  const float x = c * (1.0f - std::fabs(std::fmod(h_prime, 2.0f) - 1.0f));
+  Rgb hsvToRgb(float h, float s, float v) {
+    const float c = v * s;
+    const float h_nonneg = (h < 0.0f) ? 0.0f : h;
+    const float h_prime = std::fmod(h_nonneg, 1.0f) * 6.0f;
+    const float x = c * (1.0f - std::fabs(std::fmod(h_prime, 2.0f) - 1.0f));
 
-  float r1 = 0.0f;
-  float g1 = 0.0f;
-  float b1 = 0.0f;
+    float r1 = 0.0f;
+    float g1 = 0.0f;
+    float b1 = 0.0f;
 
-  if (0.0f <= h_prime && h_prime < 1.0f) {
-    r1 = c;
-    g1 = x;
-    b1 = 0.0f;
-  } else if (1.0f <= h_prime && h_prime < 2.0f) {
-    r1 = x;
-    g1 = c;
-    b1 = 0.0f;
-  } else if (2.0f <= h_prime && h_prime < 3.0f) {
-    r1 = 0.0f;
-    g1 = c;
-    b1 = x;
-  } else if (3.0f <= h_prime && h_prime < 4.0f) {
-    r1 = 0.0f;
-    g1 = x;
-    b1 = c;
-  } else if (4.0f <= h_prime && h_prime < 5.0f) {
-    r1 = x;
-    g1 = 0.0f;
-    b1 = c;
-  } else {
-    r1 = c;
-    g1 = 0.0f;
-    b1 = x;
+    if (0.0f <= h_prime && h_prime < 1.0f) {
+      r1 = c;
+      g1 = x;
+      b1 = 0.0f;
+    } else if (1.0f <= h_prime && h_prime < 2.0f) {
+      r1 = x;
+      g1 = c;
+      b1 = 0.0f;
+    } else if (2.0f <= h_prime && h_prime < 3.0f) {
+      r1 = 0.0f;
+      g1 = c;
+      b1 = x;
+    } else if (3.0f <= h_prime && h_prime < 4.0f) {
+      r1 = 0.0f;
+      g1 = x;
+      b1 = c;
+    } else if (4.0f <= h_prime && h_prime < 5.0f) {
+      r1 = x;
+      g1 = 0.0f;
+      b1 = c;
+    } else {
+      r1 = c;
+      g1 = 0.0f;
+      b1 = x;
+    }
+
+    const float m = v - c;
+    return {r1 + m, g1 + m, b1 + m};
   }
-
-  const float m = v - c;
-  return {r1 + m, g1 + m, b1 + m};
-}
 
 }  // namespace
 
 class JointTrajectoryVizNode : public rclcpp::Node {
-public:
+ public:
   JointTrajectoryVizNode() : Node("joint_trajectory_viz_node") {
     this->declare_parameter<std::string>("plot_frame", "base_link");
     this->declare_parameter<int>("max_points", 2000);
@@ -166,7 +164,7 @@ public:
                 "joint_trajectory_viz_node ready. Publishing /joint_traj_viz (MarkerArray)");
   }
 
-private:
+ private:
   void registerJointIfNeeded(const std::string& name) {
     if (joint_to_z_index_.find(name) != joint_to_z_index_.end()) {
       return;
@@ -427,7 +425,7 @@ private:
     RCLCPP_INFO(get_logger(), "Cleared joint trajectory visualization.");
   }
 
-private:
+ private:
   std::string plot_frame_;
   int max_points_ = 2000;
   double time_window_sec_ = 0.0;

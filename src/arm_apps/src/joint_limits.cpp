@@ -1,124 +1,124 @@
 #include "arm_apps/joint_limits.hpp"
 
+#include <urdf/model.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
 
-#include <urdf/model.h>
-
 namespace arm_apps {
-JointLimits::JointLimits(const UrdfChainFK& fk) {
-  /*
-   * Extract joint names and URDF model from the provided UrdfChainFK instance.
-   */
-  const auto& joint_names = fk.jointNames();
-  const urdf::Model& model = fk.urdfModel();
-
-  limits_.clear();
-  limits_.reserve(joint_names.size());
-
-  const auto inf = std::numeric_limits<double>::infinity();
-
-  /*
-   * Iterate through all joint names in the FK chain and extract their limits
-   * from the URDF model. If a joint has no limits defined in the URDF, fallback
-   * to +/- infinity for position and velocity.
-   */
-  for (const auto& name : joint_names) {
+  JointLimits::JointLimits(const UrdfChainFK& fk) {
     /*
-     * Create JointLimit struct for this joint, this will be filled
-     * below with data from the URDF if available.
+     * Extract joint names and URDF model from the provided UrdfChainFK instance.
      */
-    JointLimit lim;
+    const auto& joint_names = fk.jointNames();
+    const urdf::Model& model = fk.urdfModel();
+
+    limits_.clear();
+    limits_.reserve(joint_names.size());
+
+    const auto inf = std::numeric_limits<double>::infinity();
 
     /*
-     * Default limits: +/- infinity for position and velocity
+     * Iterate through all joint names in the FK chain and extract their limits
+     * from the URDF model. If a joint has no limits defined in the URDF, fallback
+     * to +/- infinity for position and velocity.
      */
-    lim.min_position = -inf;
-    lim.max_position = inf;
-    lim.max_velocity = inf;
-    lim.max_acceleration = inf;
+    for (const auto& name : joint_names) {
+      /*
+       * Create JointLimit struct for this joint, this will be filled
+       * below with data from the URDF if available.
+       */
+      JointLimit lim;
 
-    urdf::JointConstSharedPtr joint = model.getJoint(name);
-    if (joint) {
-      if (joint->limits) {
-        lim.max_velocity = static_cast<double>(joint->limits->velocity);
+      /*
+       * Default limits: +/- infinity for position and velocity
+       */
+      lim.min_position = -inf;
+      lim.max_position = inf;
+      lim.max_velocity = inf;
+      lim.max_acceleration = inf;
+
+      urdf::JointConstSharedPtr joint = model.getJoint(name);
+      if (joint) {
+        if (joint->limits) {
+          lim.max_velocity = static_cast<double>(joint->limits->velocity);
+        }
+
+        switch (joint->type) {
+          case urdf::Joint::REVOLUTE:
+          case urdf::Joint::PRISMATIC:
+            if (joint->limits) {
+              lim.min_position = static_cast<double>(joint->limits->lower);
+              lim.max_position = static_cast<double>(joint->limits->upper);
+            }
+            break;
+          case urdf::Joint::CONTINUOUS:
+            // No position limits (stay at +/-inf). Keep max_velocity if available.
+            break;
+          default:
+            // Fixed/Floating/Planar/Unknown: leave fallback +/-inf.
+            break;
+        }
       }
 
-      switch (joint->type) {
-        case urdf::Joint::REVOLUTE:
-        case urdf::Joint::PRISMATIC:
-          if (joint->limits) {
-            lim.min_position = static_cast<double>(joint->limits->lower);
-            lim.max_position = static_cast<double>(joint->limits->upper);
-          }
-          break;
-        case urdf::Joint::CONTINUOUS:
-          // No position limits (stay at +/-inf). Keep max_velocity if available.
-          break;
-        default:
-          // Fixed/Floating/Planar/Unknown: leave fallback +/-inf.
-          break;
+      limits_.push_back(lim);
+    }
+  }
+
+  void JointLimits::clamp(std::vector<double>& q) const {
+    if (q.size() != limits_.size()) {
+      throw std::runtime_error("JointLimits::clamp: q size does not match limits size");
+    }
+
+    for (std::size_t i = 0; i < q.size(); ++i) {
+      if (!std::isfinite(q[i])) {
+        continue;
+      }
+
+      const double min_p = limits_[i].min_position;
+      const double max_p = limits_[i].max_position;
+
+      q[i] = std::clamp(q[i], min_p, max_p);
+    }
+  }
+
+  bool JointLimits::withinLimits(const std::vector<double>& q) const {
+    if (q.size() != limits_.size()) {
+      throw std::runtime_error("JointLimits::withinLimits: q size does not match limits size");
+    }
+
+    for (std::size_t i = 0; i < q.size(); ++i) {
+      if (!std::isfinite(q[i])) {
+        return false;
+      }
+
+      const double min_p = limits_[i].min_position;
+      const double max_p = limits_[i].max_position;
+      if (q[i] < min_p || q[i] > max_p) {
+        return false;
       }
     }
 
-    limits_.push_back(lim);
-  }
-}
-
-void JointLimits::clamp(std::vector<double>& q) const {
-  if (q.size() != limits_.size()) {
-    throw std::runtime_error("JointLimits::clamp: q size does not match limits size");
+    return true;
   }
 
-  for (std::size_t i = 0; i < q.size(); ++i) {
-    if (!std::isfinite(q[i])) {
-      continue;
+  size_t JointLimits::dof() const {
+    return limits_.size();
+  }
+
+  double JointLimits::maxVelocity(size_t idx) const {
+    if (idx >= limits_.size()) {
+      throw std::runtime_error("JointLimits::maxVelocity: idx out of range");
     }
-
-    const double min_p = limits_[i].min_position;
-    const double max_p = limits_[i].max_position;
-
-    q[i] = std::clamp(q[i], min_p, max_p);
-  }
-}
-
-bool JointLimits::withinLimits(const std::vector<double>& q) const {
-  if (q.size() != limits_.size()) {
-    throw std::runtime_error("JointLimits::withinLimits: q size does not match limits size");
+    return limits_[idx].max_velocity;
   }
 
-  for (std::size_t i = 0; i < q.size(); ++i) {
-    if (!std::isfinite(q[i])) {
-      return false;
+  double JointLimits::maxAcceleration(size_t idx) const {
+    if (idx >= limits_.size()) {
+      throw std::runtime_error("JointLimits::maxAcceleration: idx out of range");
     }
-
-    const double min_p = limits_[i].min_position;
-    const double max_p = limits_[i].max_position;
-    if (q[i] < min_p || q[i] > max_p) {
-      return false;
-    }
+    return limits_[idx].max_acceleration;
   }
-
-  return true;
-}
-
-size_t JointLimits::dof() const {
-  return limits_.size();
-}
-
-double JointLimits::maxVelocity(size_t idx) const {
-  if (idx >= limits_.size()) {
-    throw std::runtime_error("JointLimits::maxVelocity: idx out of range");
-  }
-  return limits_[idx].max_velocity;
-}
-
-double JointLimits::maxAcceleration(size_t idx) const {
-  if (idx >= limits_.size()) {
-    throw std::runtime_error("JointLimits::maxAcceleration: idx out of range");
-  }
-  return limits_[idx].max_acceleration;
-}
 }  // namespace arm_apps

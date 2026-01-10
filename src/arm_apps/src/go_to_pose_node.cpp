@@ -1,30 +1,26 @@
+#include <rcl_action/action_server.h>
+
+#include <chrono>
+#include <cmath>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <mutex>
+#include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <thread>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
-
 #include <trajectory_msgs/msg/joint_trajectory_point.hpp>
 
-#include <rcl_action/action_server.h>
-
-#include <optional>
-#include <mutex>
-#include <thread>
-#include <cmath>
-#include <chrono>
-
+#include "arm_apps/action/go_to_pose.hpp"
 #include "arm_apps/ik_dls.hpp"
-
-#include "arm_apps/urdf_chain_fk.hpp"
 #include "arm_apps/joint_limits.hpp"
 #include "arm_apps/joint_mapping.hpp"
 #include "arm_apps/joint_trajectory.hpp"
-
-#include "arm_apps/action/go_to_pose.hpp"
+#include "arm_apps/urdf_chain_fk.hpp"
 
 class GoToPoseNode : public rclcpp::Node {
-public:
+ public:
   using GoToPose = arm_apps::action::GoToPose;
   using GoalHandleGoToPose = rclcpp_action::ServerGoalHandle<GoToPose>;
 
@@ -136,7 +132,7 @@ public:
     RCLCPP_INFO(get_logger(), "GoToPose Action Server ready on /go_to_pose");
   }
 
-private:
+ private:
   /*
    * Callback for JointState messages, this listener will be called whenever
    * a new JointState message is received. Meaning whenever the joint state
@@ -215,7 +211,7 @@ private:
 
   rclcpp_action::CancelResponse handle_cancel(
       const std::shared_ptr<GoalHandleGoToPose> goal_handle) {
-    (void)goal_handle;
+    (void) goal_handle;
     RCLCPP_INFO(get_logger(), "Cancel request received");
     return rclcpp_action::CancelResponse::ACCEPT;
   }

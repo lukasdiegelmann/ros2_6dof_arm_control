@@ -1,91 +1,90 @@
 
+#include <tf2/LinearMath/Quaternion.h>
+
 #include <chrono>
 #include <cstdlib>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <stdexcept>
 #include <string>
-
-#include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-
-#include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace {
-/*
- * Define Struct with all CLI options that can be specified. Furthermore
- * the default values are set here.
- */
-struct CliOptions {
-  double x = 0.45;
-  double y = 0.0;
-  double z = 0.30;
-  double roll = 0.0;
-  double pitch = 0.0;
-  double yaw = 0.0;
-};
+  /*
+   * Define Struct with all CLI options that can be specified. Furthermore
+   * the default values are set here.
+   */
+  struct CliOptions {
+    double x = 0.45;
+    double y = 0.0;
+    double z = 0.30;
+    double roll = 0.0;
+    double pitch = 0.0;
+    double yaw = 0.0;
+  };
 
-/*
- * Print usage information to stderr. In case the program was used incorrectly,
- * this function can be called to inform the user about the correct usage.
- */
-static void printUsage(const char* prog) {
-  std::cerr << "Usage: " << prog << " [--x X] [--y Y] [--z Z] [--roll R] [--pitch P] [--yaw Y]\n"
-            << "Defaults: x=0.45 y=0.0 z=0.30 roll=0 pitch=0 yaw=0\n";
-}
-
-/*
- * Parse a string into a double, throwing an exception if parsing fails.
- */
-static double parseDouble(const std::string& value, const std::string& flag) {
-  try {
-    size_t idx = 0;
-    const double v = std::stod(value, &idx);
-    if (idx != value.size()) {
-      throw std::runtime_error("Invalid numeric value for " + flag + ": '" + value + "'");
-    }
-    return v;
-  } catch (const std::exception& e) {
-    throw std::runtime_error("Failed to parse " + flag + ": '" + value + "'");
+  /*
+   * Print usage information to stderr. In case the program was used incorrectly,
+   * this function can be called to inform the user about the correct usage.
+   */
+  static void printUsage(const char* prog) {
+    std::cerr << "Usage: " << prog << " [--x X] [--y Y] [--z Z] [--roll R] [--pitch P] [--yaw Y]\n"
+              << "Defaults: x=0.45 y=0.0 z=0.30 roll=0 pitch=0 yaw=0\n";
   }
-}
 
-/*
- * Parse command line arguments into the CliOptions struct.
- */
-static CliOptions parseArgs(int argc, char** argv) {
-  CliOptions opt;
-  for (int i = 1; i < argc; ++i) {
-    const std::string a(argv[i]);
-    if (a == "--help" || a == "-h") {
-      printUsage(argv[0]);
-      std::exit(0);
-    }
-
-    auto requireValue = [&](const std::string& flag) -> std::string {
-      if (i + 1 >= argc) {
-        throw std::runtime_error("Missing value after " + flag);
+  /*
+   * Parse a string into a double, throwing an exception if parsing fails.
+   */
+  static double parseDouble(const std::string& value, const std::string& flag) {
+    try {
+      size_t idx = 0;
+      const double v = std::stod(value, &idx);
+      if (idx != value.size()) {
+        throw std::runtime_error("Invalid numeric value for " + flag + ": '" + value + "'");
       }
-      return std::string(argv[++i]);
-    };
-
-    if (a == "--x")
-      opt.x = parseDouble(requireValue(a), a);
-    else if (a == "--y")
-      opt.y = parseDouble(requireValue(a), a);
-    else if (a == "--z")
-      opt.z = parseDouble(requireValue(a), a);
-    else if (a == "--roll")
-      opt.roll = parseDouble(requireValue(a), a);
-    else if (a == "--pitch")
-      opt.pitch = parseDouble(requireValue(a), a);
-    else if (a == "--yaw")
-      opt.yaw = parseDouble(requireValue(a), a);
-    else {
-      throw std::runtime_error("Unknown argument: " + a);
+      return v;
+    } catch (const std::exception& e) {
+      throw std::runtime_error("Failed to parse " + flag + ": '" + value + "'");
     }
   }
-  return opt;
-}
+
+  /*
+   * Parse command line arguments into the CliOptions struct.
+   */
+  static CliOptions parseArgs(int argc, char** argv) {
+    CliOptions opt;
+    for (int i = 1; i < argc; ++i) {
+      const std::string a(argv[i]);
+      if (a == "--help" || a == "-h") {
+        printUsage(argv[0]);
+        std::exit(0);
+      }
+
+      auto requireValue = [&](const std::string& flag) -> std::string {
+        if (i + 1 >= argc) {
+          throw std::runtime_error("Missing value after " + flag);
+        }
+        return std::string(argv[++i]);
+      };
+
+      if (a == "--x")
+        opt.x = parseDouble(requireValue(a), a);
+      else if (a == "--y")
+        opt.y = parseDouble(requireValue(a), a);
+      else if (a == "--z")
+        opt.z = parseDouble(requireValue(a), a);
+      else if (a == "--roll")
+        opt.roll = parseDouble(requireValue(a), a);
+      else if (a == "--pitch")
+        opt.pitch = parseDouble(requireValue(a), a);
+      else if (a == "--yaw")
+        opt.yaw = parseDouble(requireValue(a), a);
+      else {
+        throw std::runtime_error("Unknown argument: " + a);
+      }
+    }
+    return opt;
+  }
 
 }  // namespace
 

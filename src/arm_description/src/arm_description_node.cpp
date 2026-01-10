@@ -2,6 +2,6 @@
 #include "std_msgs/msg/string.hpp"
 
 class ArmDescriptionNode : public rclcpp::Node {
-public:
+ public:
   ArmDescriptionNode() : Node("arm_description_node") {}
 };
