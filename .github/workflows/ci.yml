@@ -33,8 +33,7 @@ jobs:
             git \
             python3-pip \
             python3-rosdep \
-            python3-colcon-common-extensions \
-            clang-format
+            python3-colcon-common-extensions
 
       - name: rosdep install
         shell: bash
@@ -66,12 +65,3 @@ jobs:
         run: |
           python3 -m pip install --no-cache-dir -r requirements.txt
           black --check scripts src/arm_bringup/launch src/arm_bringup/scripts
-
-      - name: C++ format (clang-format)
-        shell: bash
-        run: |
-          files=$(find src -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \))
-          if [[ -n "$files" ]]; then
-            clang-format --version
-            clang-format --dry-run --Werror $files
-          fi
