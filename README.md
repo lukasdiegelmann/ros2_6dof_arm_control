@@ -1,12 +1,12 @@
 # ros2_6dof_arm_control
 
 <p align="center">
-  <img src="media/pick_and_place.gif" width="420">
+  <img src="media/pick_and_place.gif" width="420" alt="Simulated 6-DOF arm executing a simple sequence">
 </p>
 
 <p align="center">
-  <b>ROS 2 (Jazzy) simulated 6-DOF arm control pipeline</b><br>
-  Custom IK + trajectory generation • ros2_control • Gazebo (gz sim) • RViz
+  <b>Actuated 6‑DOF serial mechanism control (simulation)</b><br>
+  Kinematic control → joint‑space trajectories → ros2_control actuator abstraction (Gazebo)
 </p>
 
 <p align="center">
@@ -18,57 +18,62 @@
 
 ## What this project does
 
-This repository implements a ROS 2 (Jazzy) workspace that can simulate and command a UR5-style 6-DOF arm through a
-deliberately explicit pipeline from Cartesian pose targets to a `trajectory_msgs/JointTrajectory` executed by `ros2_control`.
+This repository models and controls a UR5‑style 6‑DOF serial arm as an **actuated multi‑joint mechanism**.
+The core engineering focus is the chain from a geometric mechanism description and joint constraints to
+repeatable joint‑level command execution through a controller/hardware abstraction.
 
-Concrete capabilities:
+Concretely:
 
-- Gazebo (gz sim) simulation bringup via `ros_gz_sim` and `gz_ros2_control`, including `/clock` bridging and robot spawning.
-- Robot description in Xacro/URDF with meshes, used consistently across Gazebo and RViz.
-- Controller configuration for `joint_state_broadcaster` and `joint_trajectory_controller`.
-- C++ nodes that:
-  - solve inverse kinematics with damped least squares using a KDL chain built from `robot_description`
-  - enforce joint limits and simple velocity constraints
-  - generate time-parameterized joint trajectories and publish them to a controller topic
-- Demo applications: a pick-and-place style target sequence runner and a Cartesian circle waypoint generator.
-- Visualization helpers: RViz launch and nodes/scripts for plotting joint trajectories and end-effector trails.
+- Models a 6‑DOF revolute chain with geometry, joint axes, limits, and simplified inertials in Xacro/URDF.
+- Uses `ros2_control` as an **actuator interface boundary** (position command + state feedback) and runs it in Gazebo via `gz_ros2_control`.
+- Executes joint‑space trajectories through `joint_state_broadcaster` and `joint_trajectory_controller`.
+- Implements a Damped Least Squares IK solver (numeric Jacobian) and a small trajectory generator to translate Cartesian targets into joint trajectories.
+- Applies joint‑level constraints (limits and simple velocity constraints) to keep commanded motion physically plausible for a position‑controlled mechanism.
+- Includes a quantitative convergence measurement (IK iteration error vs tolerance) to validate kinematic control behavior on a fixed target.
+
+ROS 2 is treated as the integration layer (transport, lifecycle, launch, tooling); the “system” is the modeled mechanism and the joint‑level control interface.
 
 ## What this project explicitly does NOT do
 
-This repository keeps scope intentionally narrow. It does not include:
+This scope is intentional:
 
-- Collision checking or motion planning (no MoveIt2 planning pipeline).
-- Execution on real hardware (no drivers, calibration, safety interlocks, or hardware interfaces).
-- Dynamics identification or torque/impedance control (position-trajectory execution only).
-- Perception (no camera/LiDAR integration, object detection, or grasp planning).
-- A full task-level autonomy stack (no behavior trees, state machines, or scene management).
+- No real hardware execution: no drivers, calibration, safety interlocks, or hardware interfaces.
+- No motor electrical model: no current/voltage dynamics, PWM, back‑EMF, thermal limits.
+- No dynamics identification / high‑fidelity dynamics: no parameter identification, friction identification, or validation against measured data.
+- No torque/impedance control: trajectory execution is position‑interface oriented.
+- No collision checking or planning stack: no MoveIt2 planning pipeline.
+- No perception: no cameras/LiDAR, object detection, or grasp synthesis.
+- No task autonomy framework: no behavior trees/state machines/scene management.
+
+---
+
+## Modeling assumptions
+
+- The inertial parameters are **simplified** and selected for plausibility and simulation stability.
+- The model is suitable for early mechanism/control interface evaluation (kinematics, limits, controller wiring), not identification‑grade dynamics.
+- Reported performance is limited to the simulated mechanism and the chosen controller configuration.
 
 ---
 
 ## Packages
 
-- `arm_description`: Xacro/URDF + meshes for the UR5-style arm (including sim-oriented `ros2_control` configuration).
+- `arm_description`: Xacro/URDF + meshes for the UR5‑style arm (includes sim‑oriented `ros2_control` wiring).
 - `arm_control`: controller configuration (`joint_state_broadcaster`, `joint_trajectory_controller`).
-- `arm_bringup`: launch files and Python utilities to start simulation, bridge time, spawn the robot, and start RViz.
+- `arm_bringup`: launch files/utilities to start simulation, spawn the robot, and start RViz.
 - `arm_apps`: C++ nodes for IK, trajectory generation, demo sequencing, and visualization.
-
----
-
-## Tech Stack
-
-- ROS2 (Jazzy)
-- C++ (`rclcpp`) + Python (`rclpy`)
-- Gazebo (`gz sim`)
-- `ros2_control` + `ros2_controllers`
-- RViz2
 
 ---
 
 ## Quantitative evaluation (IK convergence)
 
-This repository includes one reproducible quantitative artifact measuring **Damped Least Squares (DLS) IK convergence**.
-For a fixed initial joint configuration and fixed Cartesian target pose, the solver logs the **end-effector position error norm** (meters) per iteration.
-The solver also logs the **end-effector rotation error** (radians).
+This repository includes one reproducible quantitative artifact measuring **Damped Least Squares IK convergence**.
+For a fixed initial joint configuration and fixed Cartesian target pose, the solver logs the per‑iteration:
+
+- end‑effector position error norm (m)
+- end‑effector rotation error norm (rad)
+
+Why it matters: convergence behavior is a practical check that the mechanism’s kinematic chain, joint ordering, and
+joint‑space update law are wired correctly and behave sensibly under a position‑controlled actuation abstraction.
 
 Generate the raw data (CSV):
 
@@ -81,13 +86,13 @@ Generate the raw data (CSV):
 
 Generate the plots (PNG):
 
-### Reads the latest timestamped CSVs from docs/evaluation/ and writes matching PNGs
-  python3 scripts/plot_ik_convergence.py
+    # Reads the latest timestamped CSVs from docs/evaluation/ and writes matching PNGs
+    python3 scripts/plot_ik_convergence.py
 
 Notes:
 
 - The plots require matplotlib (Ubuntu: `sudo apt install -y python3-matplotlib`).
-- Pandas is optional; the script will fall back to the stdlib CSV reader if pandas is not installed.
+- Pandas is optional; the script falls back to the stdlib CSV reader if pandas is not installed.
 
 Example output plots (committed sample run):
 
@@ -96,41 +101,23 @@ Example output plots (committed sample run):
   <img src="docs/evaluation/20260114_193440_ik_dls_rotation_convergence.png" width="48%" />
 </p>
 
-Interpretation (for the sample run above): the solver converges in 10 iterations to 0.000944 m position error (< 0.001 m tol) and 0.00863 rad rotation error (< 0.01 rad tol). This demonstrates convergence for one fixed pose target; it is not a global guarantee over all poses.
+Concrete result (sample run above): converged in 10 iterations to 0.000944 m position error (tol 0.001 m) and 0.00863 rad rotation error (tol 0.01 rad).
+This demonstrates convergence for one fixed target pose; it is not a global guarantee over all poses/configurations.
 
 ---
 
 ## Build
 
-### Requirements
+Requirements:
 
 - Linux (tested on Ubuntu 24.04)
-- ROS2 **Jazzy** (Ubuntu 24.04)
+- ROS 2 Jazzy (Ubuntu 24.04)
 
-### Build
+Build:
 
-    # 1) Source your ROS distro
     source /opt/ros/$ROS_DISTRO/setup.bash
-
-    # 2) System tools
-    sudo apt update
-    sudo apt install -y \
-      python3-rosdep \
-      python3-colcon-common-extensions \
-      python3-vcstool
-
-    # 3) rosdep (first time only)
-    sudo rosdep init || true
-    rosdep update
-
-    # 4) Install package dependencies
-    cd /path/to/ros2_6dof_arm_control
     rosdep install --from-paths src --ignore-src -r -y
-
-    # 5) Build
     colcon build --symlink-install
-
-    # 6) Source overlay
     source install/setup.bash
 
 ---
@@ -139,12 +126,7 @@ Interpretation (for the sample run above): the solver converges in 10 iterations
 
 All demo launch files live in `arm_bringup`.
 
----
-
 ### Pick & Place
-
-Starts Gazebo simulation, spawns the UR5, ensures controllers are active,
-runs `go_to_pose_node`, and executes a predefined target sequence.
 
 <table>
 <tr>
@@ -161,15 +143,7 @@ ros2 launch arm_bringup pick_and_place.demo.launch.py
 </tr>
 </table>
 
-<p align="center">
-  (GitHub Mobile/App: GIF may not load) <a href="media/pick_and_place.gif">Open Pick &amp; Place GIF</a>
-</p>
-
----
-
 ### Cartesian circle (draw_circle_cartesian)
-
-Runs a Cartesian circle by generating TCP waypoints and solving IK for each point.
 
 <table>
 <tr>
@@ -177,12 +151,10 @@ Runs a Cartesian circle by generating TCP waypoints and solving IK for each poin
 <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
 
-ros2 launch arm_bringup \\
-circle_cartesian.demo.launch.py
+ros2 launch arm_bringup circle_cartesian.demo.launch.py
 </code></pre>
 <strong>Optional arguments:</strong>
-<pre><code>ros2 launch arm_bringup \
-circle_cartesian.demo.launch.py \
+<pre><code>ros2 launch arm_bringup circle_cartesian.demo.launch.py \
   radius:=0.18 plane:=xy loops:=2 \
   num_points:=80 point_duration:=0.30
 </code></pre>
@@ -193,25 +165,15 @@ circle_cartesian.demo.launch.py \
 </tr>
 </table>
 
-<p align="center">
-  (GitHub Mobile/App: GIF may not load) <a href="media/circle_cartesian.gif">Open Cartesian Circle GIF</a>
-</p>
-
----
-
 ### Joint trajectory visualization
-
-Publishes RViz `visualization_msgs/Marker` traces for joint trajectories.
-
-    
 
 <table>
 <tr>
 <td width="50%" valign="top">
 <pre><code>source /opt/ros/$ROS_DISTRO/setup.bash
 source install/setup.bash
-ros2 launch arm_bringup \
-joint_traj_viz.launch.py
+
+ros2 launch arm_bringup joint_traj_viz.launch.py
 </code></pre>
 </td>
 <td width="50%" align="center" valign="top">
@@ -220,40 +182,9 @@ joint_traj_viz.launch.py
 </tr>
 </table>
 
-<p align="center">
-  (GitHub Mobile/App: GIF may not load) <a href="media/trajectory_plotting.gif">Open Trajectory Plotting GIF</a>
-</p>
-
 ---
 
-### RViz (optional)
-
-Starts RViz2 with a preconfigured visualization.
-
-    source /opt/ros/$ROS_DISTRO/setup.bash
-    source install/setup.bash
-
-    ros2 launch arm_bringup rviz.launch.py
-
-Optional plotting:
-
-    ros2 launch arm_bringup rviz.launch.py use_rqt_plot:=true plot_joint_count:=6
-
----
-
-### One-shot pose command (CLI)
-
-When `go_to_pose_node` is running:
-
-    ros2 run arm_apps go_to_pose \
-      --x 0.45 --y 0.15 --z 0.25 \
-      --roll 0 --pitch 0 --yaw 0
-
----
-
-## Architecture Overview
-
-### Node graph (high level)
+## Architecture overview (high level)
 
     Gazebo (gz sim)
       │
