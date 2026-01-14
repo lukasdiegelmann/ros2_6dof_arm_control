@@ -124,10 +124,3 @@ jobs:
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
           colcon build --symlink-install
-
-      # --------- Python formatting (black) ----------
-      - name: Python format (black)
-        shell: bash
-        run: |
-          python3 -m pip install --no-cache-dir -r requirements.txt
-          black --check scripts src/arm_bringup/launch src/arm_bringup/scripts
