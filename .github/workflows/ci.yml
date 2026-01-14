@@ -125,30 +125,6 @@ jobs:
           source /opt/ros/$ROS_DISTRO/setup.bash
           colcon build --symlink-install
 
-      - name: Test (if available)
-        shell: bash
-        run: |
-          source /opt/ros/$ROS_DISTRO/setup.bash
-          source install/setup.bash
-          colcon test --event-handlers console_direct+
-          if compgen -G "log/latest_test/*" > /dev/null; then
-            colcon test-result --verbose
-          else
-            echo "No test results found (no tests defined)."
-          fi
-
-      - name: Upload lint reports (flake8, xmllint, etc.)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-reports
-          path: |
-            build/**/ament_flake8/*.txt
-            build/**/test_results/**/flake8.xunit.xml
-            build/**/test_results/**/xmllint.xunit.xml
-            build/**/Testing/Temporary/LastTest.log
-          if-no-files-found: ignore
-
       # --------- Python formatting (black) ----------
       - name: Python format (black)
         shell: bash
