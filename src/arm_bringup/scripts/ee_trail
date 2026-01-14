@@ -6,14 +6,13 @@ from dataclasses import dataclass
 from typing import Deque, Optional
 
 import rclpy
+from geometry_msgs.msg import Point
 from rclpy.exceptions import ParameterAlreadyDeclaredException
 from rclpy.node import Node
 from rclpy.time import Time
-
-from geometry_msgs.msg import Point
+from tf2_ros import Buffer, TransformListener
 from visualization_msgs.msg import Marker
 
-from tf2_ros import Buffer, TransformListener
 
 @dataclass
 class ColorRGBA:

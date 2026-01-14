@@ -8,9 +8,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     output_csv = LaunchConfiguration("output_csv")
 
-    xacro_file = PathJoinSubstitution(
-        [FindPackageShare("arm_description"), "xacro", "ur5.xacro"]
-    )
+    xacro_file = PathJoinSubstitution([FindPackageShare("arm_description"), "xacro", "ur5.xacro"])
     robot_description = {"robot_description": Command(["xacro ", xacro_file])}
 
     eval_node = Node(

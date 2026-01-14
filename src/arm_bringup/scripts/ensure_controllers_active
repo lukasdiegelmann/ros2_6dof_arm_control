@@ -4,10 +4,14 @@ import time
 from typing import Dict, List, Optional
 
 import rclpy
-from rclpy.node import Node
-
-from controller_manager_msgs.srv import ConfigureController, ListControllers, LoadController, SwitchController
 from builtin_interfaces.msg import Duration
+from controller_manager_msgs.srv import (
+    ConfigureController,
+    ListControllers,
+    LoadController,
+    SwitchController,
+)
+from rclpy.node import Node
 
 
 def _now_monotonic() -> float:

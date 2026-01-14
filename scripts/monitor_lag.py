@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import threading
 import math
+import threading
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -10,7 +10,6 @@ from typing import Dict, Optional
 import rclpy
 from rclpy.node import Node
 from rclpy.time import Time
-
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState
 
@@ -89,7 +88,9 @@ class LagMonitor(Node):
         self._last_desired: Dict[str, float] = {}
         self._last_actual: Dict[str, float] = {}
 
-        self._js_sub = self.create_subscription(JointState, "/joint_states", self._on_joint_state, 50)
+        self._js_sub = self.create_subscription(
+            JointState, "/joint_states", self._on_joint_state, 50
+        )
         self._clock_sub = self.create_subscription(Clock, "/clock", self._on_clock, 50)
 
         if bool(self.get_parameter("monitor_controller_state").value) and HAVE_JTC_STATE:
@@ -99,7 +100,9 @@ class LagMonitor(Node):
                 self._on_controller_state,
                 50,
             )
-            self.get_logger().info("Also monitoring /joint_trajectory_controller/state (desired vs actual).")
+            self.get_logger().info(
+                "Also monitoring /joint_trajectory_controller/state (desired vs actual)."
+            )
         else:
             self._ctrl_sub = None
             if bool(self.get_parameter("monitor_controller_state").value) and not HAVE_JTC_STATE:
@@ -154,8 +157,10 @@ class LagMonitor(Node):
                 def should_warn(last_warn: Optional[float]) -> bool:
                     return last_warn is None or repeat <= 0.0 or (now - last_warn) >= repeat
 
-                if last_clock is not None and (now - last_clock) >= warn_no_msg and should_warn(
-                    self._last_hb_warn_clock_wall
+                if (
+                    last_clock is not None
+                    and (now - last_clock) >= warn_no_msg
+                    and should_warn(self._last_hb_warn_clock_wall)
                 ):
                     self.get_logger().warn(
                         "Heartbeat: no /clock message for %.3fs (wall). This usually means Gazebo/bridge is stalled."
@@ -163,8 +168,10 @@ class LagMonitor(Node):
                     )
                     self._last_hb_warn_clock_wall = now
 
-                if last_js is not None and (now - last_js) >= warn_no_msg and should_warn(
-                    self._last_hb_warn_js_wall
+                if (
+                    last_js is not None
+                    and (now - last_js) >= warn_no_msg
+                    and should_warn(self._last_hb_warn_js_wall)
                 ):
                     self.get_logger().warn(
                         "Heartbeat: no /joint_states message for %.3fs (wall). Controller/executor likely stalled."
@@ -172,8 +179,11 @@ class LagMonitor(Node):
                     )
                     self._last_hb_warn_js_wall = now
 
-                if self._ctrl_sub is not None and last_ctrl is not None and (now - last_ctrl) >= warn_no_msg and should_warn(
-                    self._last_hb_warn_ctrl_wall
+                if (
+                    self._ctrl_sub is not None
+                    and last_ctrl is not None
+                    and (now - last_ctrl) >= warn_no_msg
+                    and should_warn(self._last_hb_warn_ctrl_wall)
                 ):
                     self.get_logger().warn(
                         "Heartbeat: no /joint_trajectory_controller/state message for %.3fs (wall)."
@@ -214,7 +224,11 @@ class LagMonitor(Node):
 
             self.get_logger().info(
                 "Jitter: joint_states(%s) clock(%s) ctrl_state(%s)"
-                % (summarize(self._js_stats), summarize(self._clock_stats), summarize(self._ctrl_stats))
+                % (
+                    summarize(self._js_stats),
+                    summarize(self._clock_stats),
+                    summarize(self._ctrl_stats),
+                )
             )
 
     def _update_gap(self, stats: GapStats, now_wall: float, now_ros: Time) -> None:
@@ -287,7 +301,8 @@ class LagMonitor(Node):
 
         if max_jump >= warn_jump and max_joint is not None:
             self.get_logger().warn(
-                "Joint jump detected: %s jumped by %.3frad between joint_states messages." % (max_joint, max_jump)
+                "Joint jump detected: %s jumped by %.3frad between joint_states messages."
+                % (max_joint, max_jump)
             )
 
         # Detect motion stalls (near-zero motion) for a sustained time.
@@ -343,7 +358,11 @@ class LagMonitor(Node):
                                 stalled_for,
                                 dt,
                                 max_jump,
-                                float(self._last_tracking_err) if self._last_tracking_err is not None else -1.0,
+                                (
+                                    float(self._last_tracking_err)
+                                    if self._last_tracking_err is not None
+                                    else -1.0
+                                ),
                             )
                         )
                         self._last_stall_warn_wall = now_wall
@@ -358,7 +377,6 @@ class LagMonitor(Node):
                     self._last_positions[name] = pos
 
         self._last_js_wall = now_wall
-
 
     def _on_controller_state(self, msg) -> None:
         # Track controller state delivery jitter, because it is published by the controller.
@@ -383,7 +401,9 @@ class LagMonitor(Node):
             actual = msg.actual
             if not desired.joint_names or not desired.positions or not actual.positions:
                 return
-            if len(desired.joint_names) != len(desired.positions) or len(desired.joint_names) != len(actual.positions):
+            if len(desired.joint_names) != len(desired.positions) or len(
+                desired.joint_names
+            ) != len(actual.positions):
                 return
 
             max_err = 0.0
@@ -399,7 +419,8 @@ class LagMonitor(Node):
             # This is just a diagnostic hint: large sustained error can look like stutter.
             if max_err >= 0.15:
                 self.get_logger().warn(
-                    "Tracking error high: %s |desired-actual|=%.3frad (controller state)." % (max_joint, max_err)
+                    "Tracking error high: %s |desired-actual|=%.3frad (controller state)."
+                    % (max_joint, max_err)
                 )
 
             self._last_tracking_err = max_err

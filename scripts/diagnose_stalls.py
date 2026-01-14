@@ -24,10 +24,8 @@ from dataclasses import dataclass
 from typing import Deque, Dict, Optional, Tuple
 
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
-from rclpy.executors import ExternalShutdownException
+from rclpy.executors import ExternalShutdownException, SingleThreadedExecutor
 from rclpy.node import Node
-
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState
 
@@ -168,7 +166,9 @@ class StallDiagnoser(Node):
         self._stall_both_since: Optional[float] = None
 
         self._sub_clock = self.create_subscription(Clock, "/clock", self._on_clock, 50)
-        self._sub_js = self.create_subscription(JointState, "/joint_states", self._on_joint_states, 50)
+        self._sub_js = self.create_subscription(
+            JointState, "/joint_states", self._on_joint_states, 50
+        )
 
         self._list_cli = None
         if _param_bool(self, "enable_list_controllers", True) and HAVE_LIST_CONTROLLERS:
@@ -312,7 +312,9 @@ class StallDiagnoser(Node):
 
         if not self._list_cli.service_is_ready():
             # Don't block waiting; lack of readiness is also evidence.
-            self.get_logger().warn(self._ts(now) + "controller_manager list_controllers service not ready")
+            self.get_logger().warn(
+                self._ts(now) + "controller_manager list_controllers service not ready"
+            )
             return
 
         timeout = _param_float(self, "list_controllers_call_timeout_s", 1.0)
@@ -329,7 +331,9 @@ class StallDiagnoser(Node):
             rclpy.spin_once(self, timeout_sec=0.05)
 
         if not fut.done():
-            self.get_logger().warn(self._ts() + "list_controllers call timed out (wall). Possible CM stall.")
+            self.get_logger().warn(
+                self._ts() + "list_controllers call timed out (wall). Possible CM stall."
+            )
             return
 
         resp = fut.result()
@@ -338,10 +342,16 @@ class StallDiagnoser(Node):
             return
 
         active = [c.name for c in resp.controller if getattr(c, "state", "") == "active"]
-        inactive = [f"{c.name}:{getattr(c, 'state', '?')}" for c in resp.controller if getattr(c, "state", "") != "active"]
+        inactive = [
+            f"{c.name}:{getattr(c, 'state', '?')}"
+            for c in resp.controller
+            if getattr(c, "state", "") != "active"
+        ]
 
         self.get_logger().info(
-            self._ts() + f"Controllers: active={active} others={inactive[:8]}" + (" ..." if len(inactive) > 8 else "")
+            self._ts()
+            + f"Controllers: active={active} others={inactive[:8]}"
+            + (" ..." if len(inactive) > 8 else "")
         )
 
     def step(self) -> None:
@@ -369,7 +379,11 @@ class StallDiagnoser(Node):
             self._stall_clock_since = now
         if age_js >= warn_no_js_s and self._stall_js_since is None:
             self._stall_js_since = now
-        if age_clock >= warn_no_clock_s and age_js >= warn_no_js_s and self._stall_both_since is None:
+        if (
+            age_clock >= warn_no_clock_s
+            and age_js >= warn_no_js_s
+            and self._stall_both_since is None
+        ):
             self._stall_both_since = now
 
         # Resume markers (use hysteresis to avoid flapping)
@@ -385,7 +399,9 @@ class StallDiagnoser(Node):
             self._stall_js_since = None
         if clock_resumed and js_resumed and self._stall_both_since is not None:
             dur = now - self._stall_both_since
-            self.get_logger().warn(self._ts(now) + f"/clock+ /joint_states RESUMED after {dur:.3f}s wall")
+            self.get_logger().warn(
+                self._ts(now) + f"/clock+ /joint_states RESUMED after {dur:.3f}s wall"
+            )
             self._stall_both_since = None
 
         # Periodic status (proof: stream rates + ages).
@@ -397,9 +413,9 @@ class StallDiagnoser(Node):
                 + "Status: "
                 + f"/clock hz≈{self._clock.hz_p50():.1f} age={age_clock:.3f}s "
                 + f"| /joint_states hz≈{self._js.hz_p50():.1f} age={age_js:.3f}s "
-                    + f"| motion_age={age_motion:.3f}s "
-                    + f"| clock_back={self._clock_backwards_count} clock_fwd={self._clock_forward_jump_count} "
-                    + f"| js_back={self._js_backwards_count} js_fwd={self._js_forward_jump_count}"
+                + f"| motion_age={age_motion:.3f}s "
+                + f"| clock_back={self._clock_backwards_count} clock_fwd={self._clock_forward_jump_count} "
+                + f"| js_back={self._js_backwards_count} js_fwd={self._js_forward_jump_count}"
             )
 
         # Classification warnings (only when something crosses thresholds).
@@ -420,7 +436,9 @@ class StallDiagnoser(Node):
                 "Likely controller/transport/executor stall.",
             )
         # B: streams alive but motion stops.
-        elif age_clock < warn_no_clock_s and age_js < warn_no_js_s and age_motion >= warn_no_motion_s:
+        elif (
+            age_clock < warn_no_clock_s and age_js < warn_no_js_s and age_motion >= warn_no_motion_s
+        ):
             classification = (
                 "B",
                 f"Streams alive (/clock age {age_clock:.3f}s, /joint_states age {age_js:.3f}s) "
