@@ -88,7 +88,7 @@ namespace arm_apps {
   }  // namespace
 
   IkResult solveIkDls(const UrdfChainFK& fk, const geometry_msgs::msg::Pose& target_pose,
-                      const std::vector<double>& q_init, const IkParams& params) {
+                      const std::vector<double>& q_init, const IkParams& params, IkTrace* trace) {
     const int n = static_cast<int>(q_init.size());
     if (n <= 0)
       throw std::runtime_error("IK: q_init empty");
@@ -107,6 +107,13 @@ namespace arm_apps {
     IkResult res;
     res.q = q;
 
+    if (trace) {
+      trace->pos_err_m.clear();
+      trace->rot_err_rad.clear();
+      trace->pos_err_m.reserve(static_cast<std::size_t>(params.max_iters));
+      trace->rot_err_rad.reserve(static_cast<std::size_t>(params.max_iters));
+    }
+
     for (int it = 0; it < params.max_iters; ++it) {
       Eigen::Vector3d p_c;
       Eigen::Matrix3d R_c;
@@ -121,6 +128,11 @@ namespace arm_apps {
 
       const double pos_err = e_p.norm();
       const double rot_err = e_R.norm();
+
+      if (trace) {
+        trace->pos_err_m.push_back(pos_err);
+        trace->rot_err_rad.push_back(rot_err);
+      }
 
       res.iterations = it;
       res.pos_err = pos_err;

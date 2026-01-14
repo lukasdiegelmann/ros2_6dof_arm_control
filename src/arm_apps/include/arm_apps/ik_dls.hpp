@@ -47,6 +47,17 @@ namespace arm_apps {
   };
 
   /**
+   * @brief Optional per-iteration logging output for IK convergence evaluation.
+   *
+   * When provided to @ref solveIkDls, the solver appends the position and
+   * orientation error norms for each iteration.
+   */
+  struct IkTrace {
+    std::vector<double> pos_err_m;
+    std::vector<double> rot_err_rad;
+  };
+
+  /**
    * @brief Solve inverse kinematics using the Damped Least-Squares (DLS) method.
    *
    * This is a numeric IK solver that attempts to find a joint vector `q` such
@@ -70,6 +81,7 @@ namespace arm_apps {
    * and a DLS update rule with damping `params.lambda`.
    */
   IkResult solveIkDls(const UrdfChainFK& fk, const geometry_msgs::msg::Pose& target_pose,
-                      const std::vector<double>& q_init, const IkParams& params);
+                      const std::vector<double>& q_init, const IkParams& params,
+                      IkTrace* trace = nullptr);
 
 }  // namespace arm_apps
