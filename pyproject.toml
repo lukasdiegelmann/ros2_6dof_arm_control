@@ -21,9 +21,13 @@ skip = ["build", "install", "log", ".venv", "venv", ".git"]
 [tool.flake8]
 max-line-length = 100
 extend-ignore = [
-  "E203",  # whitespace before ':' (black-kompatibel)
-  "W503"   # line break before binary operator (black-kompatibel)
+  "E203",
+  "W503"
 ]
+select = ["Q"]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
 exclude = [
   ".git",
   "__pycache__",
