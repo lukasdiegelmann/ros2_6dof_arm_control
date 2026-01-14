@@ -91,9 +91,10 @@ Notes:
 
 Example output plots (committed sample run):
 
-![IK DLS position convergence](docs/evaluation/20260114_193440_ik_dls_position_convergence.png)
-
-![IK DLS rotation convergence](docs/evaluation/20260114_193440_ik_dls_rotation_convergence.png)
+<p float="left">
+  <img src="docs/evaluation/20260114_193440_ik_dls_position_convergence.png" width="48%" />
+  <img src="docs/evaluation/20260114_193440_ik_dls_rotation_convergence.png" width="48%" />
+</p>
 
 Interpretation (for the sample run above): the solver converges in 10 iterations to 0.000944 m position error (< 0.001 m tol) and 0.00863 rad rotation error (< 0.01 rad tol). This demonstrates convergence for one fixed pose target; it is not a global guarantee over all poses.
 
