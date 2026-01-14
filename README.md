@@ -81,7 +81,7 @@ Generate the raw data (CSV):
 
 Generate the plots (PNG):
 
-  # Reads the latest timestamped CSVs from docs/evaluation/ and writes matching PNGs
+### Reads the latest timestamped CSVs from docs/evaluation/ and writes matching PNGs
   python3 scripts/plot_ik_convergence.py
 
 Notes:
