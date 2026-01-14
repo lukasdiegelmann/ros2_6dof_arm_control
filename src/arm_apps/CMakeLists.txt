@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(arm_apps)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -133,6 +135,25 @@ ament_target_dependencies(joint_trajectory_viz_node
   std_srvs
 )
 
+# ik_convergence_eval executable (offline IK convergence -> CSV)
+add_executable(ik_convergence_eval
+  src/ik_convergence_eval_node.cpp
+  src/urdf_chain_fk.cpp
+  src/ik_dls.cpp
+)
+
+target_include_directories(ik_convergence_eval PUBLIC include)
+target_link_libraries(ik_convergence_eval Eigen3::Eigen)
+
+ament_target_dependencies(ik_convergence_eval
+  rclcpp
+  geometry_msgs
+  kdl_parser
+  orocos_kdl
+  urdf
+  eigen3_cmake_module
+)
+
 # install the go_to_pose_node and go_to_pose executables
 install(TARGETS
   go_to_pose_node
@@ -140,6 +161,7 @@ install(TARGETS
   demo_sequence_node
   draw_circle_cartesian_node
   joint_trajectory_viz_node
+  ik_convergence_eval
   DESTINATION lib/${PROJECT_NAME}
 )
 

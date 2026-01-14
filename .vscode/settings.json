@@ -5,10 +5,10 @@
     "python.analysis.extraPaths": [
         "/opt/ros/jazzy/lib/python3.12/site-packages"
     ],
-    "cmake.sourceDirectory": "/home/lukasdiegelmann/repositories/ros2_6dof_arm_control/src/arm_description",
+    "cmake.sourceDirectory": "${workspaceFolder}/src/arm_description",
     "github.copilot.chat.codeGeneration.useInstructionFiles": true,
     "ROS2.distro": "jazzy",
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/arm_apps/compile_commands.json",
     "cSpell.words": ["rclcpp", "unitquaternion", "xacro"],
     "cSpell.enabled": false,
     "C_Cpp.clang_format_style": "file",
